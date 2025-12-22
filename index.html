@@ -1,0 +1,306 @@
+import React, { useState } from 'react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Clock, 
+  RefreshCcw, 
+  Smartphone, 
+  Users, 
+  Briefcase, 
+  Zap, 
+  TrendingUp, 
+  UserPlus, 
+  CheckCircle,
+  FileText,
+  Building
+} from 'lucide-react';
+
+const Presentation = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    // Slide 1: Ouverture & Titre
+    {
+      id: 1,
+      bg: "bg-[#1E3A8A]",
+      content: (
+        <div className="flex flex-col items-center justify-center h-full text-center p-10">
+          <div className="w-40 h-40 bg-[#FCD34D] rounded-full flex items-center justify-center mb-8 shadow-2xl animate-bounce">
+            <span className="text-white text-7xl font-black">Q</span>
+          </div>
+          <h1 className="text-[#FCD34D] text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
+            QOTIA 2025
+          </h1>
+          <p className="text-white text-2xl md:text-3xl font-medium max-w-2xl leading-relaxed">
+            L’Écosystème Collaboratif du BTP : Relier l'artisan et son comptable pour une gestion sans effort.
+          </p>
+        </div>
+      )
+    },
+    // Slide 2: Le Problème
+    {
+      id: 2,
+      bg: "bg-[#F3F4F6]",
+      content: (
+        <div className="p-8 md:p-16 h-full flex flex-col justify-center">
+          <h2 className="text-[#1E3A8A] text-4xl font-extrabold mb-12 border-l-8 border-[#FCD34D] pl-6">
+            L'administration : le fardeau de l'artisan
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border-b-4 border-red-500">
+              <Clock className="text-red-500 w-12 h-12 mb-4" />
+              <h3 className="font-bold text-xl mb-2">Perte de temps</h3>
+              <p className="text-gray-600">L'artisan perd en moyenne 10h par semaine sur ses devis le soir.</p>
+            </div>
+            <div className="bg-white p-8 rounded-2xl shadow-lg border-b-4 border-orange-500">
+              <RefreshCcw className="text-orange-500 w-12 h-12 mb-4" />
+              <h3 className="font-bold text-xl mb-2">Lenteur</h3>
+              <p className="text-gray-600">Le comptable perd du tempo à relancer et collecter les factures.</p>
+            </div>
+            <div className="bg-white p-8 rounded-2xl shadow-lg border-b-4 border-gray-400">
+              <Smartphone className="text-gray-400 w-12 h-12 mb-4" />
+              <h3 className="font-bold text-xl mb-2">Silotage</h3>
+              <p className="text-gray-600">Manque de communication fluide e centralisée tra les due.</p>
+            </div>
+          </div>
+          <div className="mt-12 text-center text-gray-400 italic">
+            [Image d'un artisan fatigué devant des montagnes de papier]
+          </div>
+        </div>
+      )
+    },
+    // Slide 3: Vision Stratégique
+    {
+      id: 3,
+      bg: "bg-white",
+      content: (
+        <div className="p-8 md:p-16 h-full flex flex-col justify-center items-center">
+          <h2 className="text-[#1E3A8A] text-4xl font-extrabold mb-16 text-center">
+            Plus qu'un logiciel, un pont collaboratif
+          </h2>
+          <div className="flex flex-col md:flex-row items-center justify-around w-full gap-12">
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 bg-[#1E3A8A] rounded-full flex items-center justify-center text-white mb-4">
+                <Users size={40} />
+              </div>
+              <span className="font-bold text-[#1E3A8A] text-xl">Artisan</span>
+            </div>
+            
+            <div className="flex-1 flex items-center justify-center relative">
+              <div className="h-1 bg-gray-200 w-full absolute top-1/2 -translate-y-1/2"></div>
+              <div className="z-10 bg-[#FCD34D] px-8 py-4 rounded-full shadow-xl flex items-center gap-3">
+                <span className="text-white font-black text-2xl italic">QOTIA</span>
+                <div className="flex gap-1">
+                  <ChevronLeft className="text-white" />
+                  <ChevronRight className="text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 bg-gray-100 border-2 border-[#1E3A8A] rounded-full flex items-center justify-center text-[#1E3A8A] mb-4">
+                <Briefcase size={40} />
+              </div>
+              <span className="font-bold text-[#1E3A8A] text-xl">Comptable</span>
+            </div>
+          </div>
+          <p className="mt-16 text-center text-gray-500 text-xl max-w-3xl">
+            Travailler sur la même donnée, en temps réel, pour éliminer les erreurs et les délais.
+          </p>
+        </div>
+      )
+    },
+    // Slide 4: Portail Intermédiaire
+    {
+      id: 4,
+      bg: "bg-[#1E3A8A]",
+      content: (
+        <div className="p-8 md:p-16 h-full flex flex-col justify-center">
+          <h2 className="text-[#FCD34D] text-4xl font-extrabold mb-8 uppercase">
+            La "Killer Feature" : Le Portail Intermédiaire
+          </h2>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="text-white space-y-6">
+              <p className="text-2xl leading-relaxed">
+                Finies les déconnexions incessantes. Un seul accès "Master" pour piloter tout votre portefeuille clients.
+              </p>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-3 text-lg">
+                  <CheckCircle className="text-[#FCD34D]" /> Tableau de bord multi-entreprises
+                </li>
+                <li className="flex items-center gap-3 text-lg">
+                  <CheckCircle className="text-[#FCD34D]" /> Centralisation des abonnements
+                </li>
+                <li className="flex items-center gap-3 text-lg">
+                  <CheckCircle className="text-[#FCD34D]" /> Accès documents légaux instantané
+                </li>
+              </ul>
+            </div>
+            <div className="bg-white/10 p-6 rounded-3xl border border-white/20 backdrop-blur-sm h-64 flex items-center justify-center text-white italic text-center">
+              [Mockup Tableau de bord montrant une liste d'entreprises avec des boutons "Accéder"]
+            </div>
+          </div>
+        </div>
+      )
+    },
+    // Slide 5: Operate As
+    {
+      id: 5,
+      bg: "bg-white",
+      content: (
+        <div className="p-8 md:p-16 h-full flex flex-col justify-center">
+          <div className="flex items-center gap-6 mb-10">
+            <div className="bg-[#1E3A8A] p-4 rounded-2xl text-white">
+              <Zap size={48} />
+            </div>
+            <h2 className="text-[#1E3A8A] text-4xl font-extrabold">
+              Prenez les commandes en un clic
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <p className="text-2xl text-gray-700">
+                Le mode <span className="font-bold text-[#1E3A8A]">"Opérer en tant que"</span> permet au comptable de créer des devis et factures avec l'identité exacte de l'artisan.
+              </p>
+              <div className="bg-gray-50 p-6 rounded-xl border-l-4 border-[#1E3A8A]">
+                <h4 className="font-bold mb-2">Détails Techniques</h4>
+                <p className="text-gray-600">Accès complet à l'éditeur professionnel QOTIA.</p>
+                <p className="text-gray-600 mt-2 font-semibold">Traçabilité Totale : "Document généré par [Cabinet X] pour [Entreprise Y]"</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <div className="relative w-48 h-48 bg-gray-100 rounded-full flex items-center justify-center">
+                 <UserPlus size={80} className="text-[#1E3A8A]" />
+                 <div className="absolute -right-4 -top-4 bg-[#FCD34D] p-3 rounded-full shadow-lg">
+                    <RefreshCcw size={32} className="text-[#1E3A8A]" />
+                 </div>
+              </div>
+              <p className="mt-6 text-gray-400 italic">Interchangeabilité des profils immédiate</p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    // Slide 6: Valeur Ajoutée
+    {
+      id: 6,
+      bg: "bg-[#F3F4F6]",
+      content: (
+        <div className="p-8 md:p-16 h-full flex flex-col justify-center">
+          <h2 className="text-[#1E3A8A] text-4xl font-extrabold mb-12 text-center">
+            Un modèle gagnant-gagnant-gagnant
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white p-8 rounded-2xl shadow-md text-center">
+              <div className="w-16 h-16 bg-blue-100 text-[#1E3A8A] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users size={32} />
+              </div>
+              <h3 className="font-bold text-xl mb-4 text-[#1E3A8A]">Pour l'Artisan</h3>
+              <p className="text-gray-600">Sérénité totale et délégation de l'administratif à un expert.</p>
+            </div>
+            <div className="bg-white p-8 rounded-2xl shadow-md text-center transform scale-105 border-2 border-[#FCD34D]">
+              <div className="w-16 h-16 bg-yellow-100 text-[#F59E0B] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Briefcase size={32} />
+              </div>
+              <h3 className="font-bold text-xl mb-4 text-[#1E3A8A]">Pour le Comptable</h3>
+              <p className="text-gray-600">Productivité doublée et documents normalisés pour le bilan.</p>
+            </div>
+            <div className="bg-white p-8 rounded-2xl shadow-md text-center">
+              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <TrendingUp size={32} />
+              </div>
+              <h3 className="font-bold text-xl mb-4 text-[#1E3A8A]">Pour QOTIA</h3>
+              <p className="text-gray-600">Croissance exponentielle via les réseaux de partenaires.</p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    // Slide 7: Conclusion (Mise à jour Contact)
+    {
+      id: 7,
+      bg: "bg-[#FCD34D]",
+      content: (
+        <div className="p-8 md:p-16 h-full flex flex-col items-center justify-center text-center">
+          <h2 className="text-[#1E3A8A] text-5xl md:text-7xl font-black mb-12">
+            Prêt à digitaliser le futur du BTP ?
+          </h2>
+          <div className="bg-white p-10 rounded-3xl shadow-2xl flex flex-col md:flex-row gap-12 items-center">
+            <div className="text-left">
+              <p className="text-gray-400 uppercase text-sm font-bold tracking-widest mb-2">Contactez-nous</p>
+              <h3 className="text-[#1E3A8A] text-3xl font-bold mb-4">Jean</h3>
+              <div className="space-y-2">
+                <p className="flex items-center gap-2 text-gray-700"><FileText size={18} /> www.qotia.fr</p>
+                <p className="flex items-center gap-2 text-gray-700"><Building size={18} /> Nice, France</p>
+              </div>
+            </div>
+            <div className="w-32 h-32 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 italic text-xs p-4">
+              [QR Code vers la démo]
+            </div>
+          </div>
+          <div className="mt-16 text-[#1E3A8A] italic">
+            [Image d'un artisan et d'un comptable qui se serrent la main sur un chantier]
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const nextSlide = () => {
+    if (currentSlide < slides.length - 1) setCurrentSlide(currentSlide + 1);
+  };
+
+  const prevSlide = () => {
+    if (currentSlide > 0) setCurrentSlide(currentSlide - 1);
+  };
+
+  return (
+    <div className="h-screen w-full flex flex-col overflow-hidden font-sans text-gray-900 bg-black">
+      {/* Slide Container */}
+      <div className={`flex-1 relative transition-all duration-500 ease-in-out ${slides[currentSlide].bg}`}>
+        {slides[currentSlide].content}
+      </div>
+
+      {/* Navigation Controls */}
+      <div className="h-20 bg-white border-t flex items-center justify-between px-8 z-50">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={prevSlide}
+            disabled={currentSlide === 0}
+            className={`p-2 rounded-full transition-colors ${currentSlide === 0 ? 'text-gray-300' : 'text-[#1E3A8A] hover:bg-gray-100'}`}
+          >
+            <ChevronLeft size={32} />
+          </button>
+          <span className="text-sm font-bold text-gray-500">
+            {currentSlide + 1} / {slides.length}
+          </span>
+          <button 
+            onClick={nextSlide}
+            disabled={currentSlide === slides.length - 1}
+            className={`p-2 rounded-full transition-colors ${currentSlide === slides.length - 1 ? 'text-gray-300' : 'text-[#1E3A8A] hover:bg-gray-100'}`}
+          >
+            <ChevronRight size={32} />
+          </button>
+        </div>
+
+        <div className="hidden md:flex items-center gap-8">
+           <div className="flex items-center gap-2">
+             <div className="w-8 h-8 bg-[#FCD34D] rounded-full flex items-center justify-center text-white text-xs font-black">Q</div>
+             <span className="font-bold text-[#1E3A8A]">QOTIA Écosystème</span>
+           </div>
+        </div>
+
+        <div className="flex gap-2">
+          {slides.map((_, idx) => (
+            <div 
+              key={idx}
+              className={`w-3 h-1 rounded-full transition-all ${idx === currentSlide ? 'bg-[#FCD34D] w-6' : 'bg-gray-200'}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Presentation;
