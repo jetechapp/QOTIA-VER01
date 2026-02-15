@@ -196,6 +196,39 @@
         #toast-container { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); z-index: 9000; pointer-events: none; width: 85%; }
         .toast { background: #1E293B; color: white; padding: 14px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; opacity: 0; transform: translateY(20px); transition: all 0.3s; margin-top: 10px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* AJOUT CDC PHOTOS : Style pour les miniatures */
+        .photo-thumb {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .photo-thumb:hover {
+            transform: scale(1.05);
+        }
+        .photo-gallery {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .add-photo-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
 </head>
 <body>
@@ -363,8 +396,41 @@
         </div>
     </div>
     
-    <div id="modal-view-cahier" class="full-modal"><div class="modal-header"><h3 id="vc-title">...</h3><button class="header-back-container" onclick="App.closeModal('modal-view-cahier')">×</button></div><div class="modal-body"><table style="width:100%; border-collapse:collapse;" id="vc-table"></table></div></div>
+    <!-- AJOUT CDC PHOTOS : Modal pour afficher et ajouter des photos à un CDC -->
+    <div id="modal-view-cahier" class="full-modal">
+        <div class="modal-header">
+            <h3 id="vc-title">...</h3>
+            <button class="header-back-container" onclick="App.closeModal('modal-view-cahier')">×</button>
+        </div>
+        <div class="modal-body" style="padding-bottom: 80px;">
+            <table style="width:100%; border-collapse:collapse;" id="vc-table"></table>
+        </div>
+    </div>
     
+    <!-- AJOUT CDC PHOTOS : Modal pour ajouter une photo à un item -->
+    <div id="modal-add-photo" class="full-modal">
+        <div class="modal-header">
+            <h3>Ajouter une photo</h3>
+            <button class="header-back-container" onclick="App.closeModal('modal-add-photo')">×</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 20px;" id="add-photo-item-desc"></p>
+            <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                <button class="btn-primary" style="width: auto; padding: 0 20px;" onclick="document.getElementById('photo-input').click()">
+                    <i class="fas fa-camera"></i> Prendre une photo
+                </button>
+                <button class="btn-primary" style="width: auto; padding: 0 20px; background: var(--text-sub);" onclick="document.getElementById('photo-input').click()">
+                    <i class="fas fa-upload"></i> Choisir un fichier
+                </button>
+            </div>
+            <div id="photo-preview" style="text-align: center; margin-top: 20px;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="App.uploadPhoto()">Télécharger</button>
+        </div>
+    </div>
+
     <div id="modal-signature" class="full-modal">
         <div class="modal-header"><h3>Signature</h3><button class="header-back-container" onclick="App.closeModal('modal-signature')">×</button></div>
         <div class="modal-body" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
@@ -657,7 +723,7 @@
         };
 
         const App = {
-            state: { invType:'acompte', tempClientType: 'particulier', viewMode: 'pieces', selectedItems: new Set(), lastPiece: 'Général', libCategory: null, libSubCategory: null, isEditing: false, tempLibItem: null, sigPad: null },
+            state: { invType:'acompte', tempClientType: 'particulier', viewMode: 'pieces', selectedItems: new Set(), lastPiece: 'Général', libCategory: null, libSubCategory: null, isEditing: false, tempLibItem: null, sigPad: null, currentCDCItemForPhoto: null, currentCDCDocForPhoto: null },
             
             init() { Auth.init(); },
 
@@ -707,7 +773,6 @@
                 let unpaid = 0; Store.data.chantiers.forEach(c => { if(c.factures) c.factures.forEach(f => { if(!f.paid) unpaid += f.amount; })});
                 document.getElementById('home-unpaid').innerText = App.formatMoney(unpaid);
             },
-            
             renderClients(q='') {
                 const l = document.getElementById('clients-list'); l.innerHTML = '';
                 Store.data.clients.forEach(c => {
@@ -733,7 +798,6 @@
                     }
                 });
             },
-            
             renderProjets() { const l = document.getElementById('projects-list-full'); l.innerHTML = ''; Store.data.chantiers.forEach(c => { const cli = Store.data.clients.find(x=>x.id==c.clientId); l.innerHTML += `<div class="card-item" style="border-left:4px solid var(--col-chantier); background:var(--bg-chantier);" onclick="App.openHub(${c.id})"><div class="card-info"><span class="card-tag">${c.ref}</span><div class="card-title">${c.name}</div><div class="card-sub"><i class="fas fa-user"></i> ${cli?cli.nom:'?'}</div></div></div>`; }); },
             
             renderSettings() {
@@ -1469,7 +1533,121 @@
             openAgenda() { const s=document.getElementById('agd-chantier'); s.innerHTML='<option value="">Sélectionner...</option>'; Store.data.chantiers.forEach(c=>{let o=document.createElement('option'); o.value=c.id; o.text=c.name; s.appendChild(o);}); document.getElementById('modal-agenda').classList.add('open'); let l=document.getElementById('agenda-list-view'); l.innerHTML=''; (Store.data.appointments||[]).forEach(a=>{let d=document.createElement('div'); d.className='card-item'; d.innerText=new Date(a.date).toLocaleString()+' - '+a.title; l.appendChild(d);}); },
             saveAgendaEvent() { const cid=document.getElementById('agd-chantier').value; const date=document.getElementById('agd-date').value; if(cid&&date){const c=Store.data.chantiers.find(x=>x.id==cid); Store.data.appointments.push({id:Date.now(), date:date, title:"Visite", sub:c.name}); Store.save(); App.showToast("RDV Enregistré"); App.closeModal('modal-agenda'); App.renderHome();} },
             renderDocuments(filter) { const l=document.getElementById('documents-list'); l.innerHTML=''; let docs=[]; Store.data.chantiers.forEach(c=>{ const cli=Store.data.clients.find(x=>x.id==c.clientId); const cn=cli?cli.nom:'-'; if(c.devisList) c.devisList.forEach(d=>docs.push({type:'Devis', ref:d.ref, client:cn, cid:c.id, obj:d})); if(c.factures) c.factures.forEach(f=>docs.push({type:'Facture', ref:f.ref, client:cn, cid:c.id, obj:f})); if(c.extraDocs) c.extraDocs.forEach(e=>docs.push({type:'CDC', ref:e.ref, client:cn, cid:c.id, obj:e})); }); if(filter&&filter!=='all') docs=docs.filter(d=>d.type===filter||(filter==='CDC'&&d.type==='Etude')); docs.forEach(d=>{ let div=document.createElement('div'); div.className='card-item'; div.innerHTML=`<div class="card-info"><span class="card-tag">${d.type}</span><div class="card-title">${d.ref}</div><div class="card-sub">${d.client}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); ${d.type==='CDC' ? `App.generateCDCPDF('${d.obj.id}')` : `App.generateGlobalPDF('${d.type.toLowerCase()}', ${d.obj.id})`}"></i>`; div.onclick=()=>{ Store.data.activeChantierId=d.cid; if(d.type==='Devis') App.openEditor(d.obj.id); else if(d.type==='CDC') App.viewCahierTable(d.obj); else App.openHub(d.cid); }; l.appendChild(div); }); },
-            viewCahierTable(doc) { document.getElementById('vc-title').innerText = doc.name; const t = document.getElementById('vc-table'); t.innerHTML = '<tr style="background:#f1f5f9; text-align:left;"><th style="padding:10px;">Article</th><th style="padding:10px;">Loc</th><th style="padding:10px;">Ass.</th></tr>'; doc.items.forEach(i => t.innerHTML += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${i.desc}</td><td style="padding:10px; border-bottom:1px solid #eee;">${i.piece||'-'}</td><td style="padding:10px; border-bottom:1px solid #eee; color:#15803d; font-weight:bold;">${i.assignedTo||'-'}</td></tr>`); document.getElementById('modal-view-cahier').classList.add('open'); },
+            
+            // AJOUT CDC PHOTOS : Modification de viewCahierTable pour afficher les photos et bouton d'ajout
+            viewCahierTable(doc) {
+                document.getElementById('vc-title').innerText = doc.name;
+                const t = document.getElementById('vc-table');
+                t.innerHTML = '<tr style="background:#f1f5f9; text-align:left;"><th style="padding:10px;">Article</th><th style="padding:10px;">Loc</th><th style="padding:10px;">Photos</th><th style="padding:10px;">Ass.</th></tr>';
+                
+                doc.items.forEach(i => {
+                    const photosHtml = (i.photos && i.photos.length) 
+                        ? i.photos.map(p => `<img src="${p}" class="photo-thumb" onclick="window.open('${p}', '_blank')">`).join('')
+                        : 'Aucune photo';
+                    
+                    const row = t.insertRow();
+                    row.style.borderBottom = '1px solid #eee';
+                    
+                    const cellDesc = row.insertCell();
+                    cellDesc.style.padding = '10px';
+                    cellDesc.innerText = i.desc;
+                    
+                    const cellLoc = row.insertCell();
+                    cellLoc.style.padding = '10px';
+                    cellLoc.innerText = i.piece || '-';
+                    
+                    const cellPhotos = row.insertCell();
+                    cellPhotos.style.padding = '10px';
+                    cellPhotos.innerHTML = `<div class="photo-gallery">${photosHtml}</div>`;
+                    
+                    const cellActions = row.insertCell();
+                    cellActions.style.padding = '10px';
+                    cellActions.innerHTML = `
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <span style="color: #15803d; font-weight:bold;">${i.assignedTo || '-'}</span>
+                            <button class="add-photo-btn" onclick="App.openAddPhotoModal('${doc.id}', ${i.id}, '${i.desc.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-camera"></i> Ajouter photo
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('modal-view-cahier').classList.add('open');
+            },
+
+            // AJOUT CDC PHOTOS : Ouvrir le modal d'ajout de photo pour un item spécifique
+            openAddPhotoModal(docId, itemId, itemDesc) {
+                App.state.currentCDCDocForPhoto = docId;
+                App.state.currentCDCItemForPhoto = itemId;
+                document.getElementById('add-photo-item-desc').innerText = `Ajouter une photo pour : ${itemDesc}`;
+                document.getElementById('photo-input').value = ''; // Reset input
+                document.getElementById('photo-preview').innerHTML = '';
+                document.getElementById('modal-add-photo').classList.add('open');
+                
+                // Prévisualisation si fichier sélectionné
+                document.getElementById('photo-input').onchange = function() {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('photo-preview').innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+            },
+
+            // AJOUT CDC PHOTOS : Upload de la photo vers Supabase Storage
+            async uploadPhoto() {
+                const fileInput = document.getElementById('photo-input');
+                const file = fileInput.files[0];
+                if (!file) return alert("Sélectionnez une photo.");
+
+                const docId = App.state.currentCDCDocForPhoto;
+                const itemId = App.state.currentCDCItemForPhoto;
+                if (!docId || !itemId) return;
+
+                const userId = Auth.user.id;
+                const fileName = `${userId}/${docId}/${itemId}/${Date.now()}_${file.name}`;
+
+                App.showToast("Upload en cours...");
+
+                const { data, error } = await sbClient.storage
+                    .from('cdc-photos')
+                    .upload(fileName, file);
+
+                if (error) {
+                    console.error(error);
+                    return App.showToast("Erreur upload : " + error.message);
+                }
+
+                // Récupérer l'URL publique (le bucket est privé, on génère une URL signée ? Pour simplifier, on rend le bucket public ? Non, on va générer une URL signée)
+                // Pour simplifier, on va supposer que le bucket est public (si vous avez mis public à true). Sinon, il faut générer une URL signée.
+                // Ici on va générer une URL signée valable 1 an.
+                const { data: urlData, error: urlError } = await sbClient.storage
+                    .from('cdc-photos')
+                    .createSignedUrl(fileName, 31536000); // 1 an
+
+                if (urlError) {
+                    console.error(urlError);
+                    return App.showToast("Erreur génération URL");
+                }
+
+                const publicUrl = urlData.signedUrl;
+
+                // Mettre à jour l'item dans le CDC
+                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+                const doc = c.extraDocs.find(d => d.id == docId);
+                const item = doc.items.find(i => i.id == itemId);
+                if (!item.photos) item.photos = [];
+                item.photos.push(publicUrl);
+
+                await Store.save();
+                App.showToast("Photo ajoutée !");
+                App.closeModal('modal-add-photo');
+                App.viewCahierTable(doc); // Rafraîchir la vue
+            },
+
             renderGlobalInvoices() { const l = document.getElementById('global-invoice-list'); l.innerHTML = ''; Store.data.chantiers.forEach(c => { if(c.factures) c.factures.forEach(f => { if(!f.paid) { const cli = Store.data.clients.find(x=>x.id==c.clientId); let div = document.createElement('div'); div.className = 'card-item'; div.innerHTML = `<div class="card-info"><div class="card-title">${cli?cli.nom:'?'}</div><div class="card-sub">Ref: ${f.ref}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('facture', ${f.id})"></i><div style="font-weight:800; color:var(--danger)">${App.formatMoney(f.amount)}</div>`; div.onclick = () => App.openHub(c.id); l.appendChild(div); } }); }); },
 
             // --- NOUVELLE FONCTION : RAPPORT PAR PIÈCES (PDF) ---
@@ -1794,6 +1972,7 @@
                 App.renderSelectionList(); // Ricarica la lista per vedere i badge
             },
 
+            // AJOUT CDC PHOTOS : Modification de saveCDC pour initialiser photos: []
             saveCDC() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 const did = document.getElementById('sel-source-devis').value;
@@ -1804,12 +1983,18 @@
                 const selectedItemsList = d.items.filter(i => App.state.selectedItems.has(i.id));
                 const assigneeName = document.getElementById('cdc-assignee').value || "Général";
                 
+                // Copia statica degli elementi, aggiungendo il campo photos vuoto
+                const itemsCopy = selectedItemsList.map(item => ({
+                    ...item,
+                    photos: [] // AJOUT CDC PHOTOS
+                }));
+                
                 const newDoc = {
                     id: Date.now(),
                     name: `CDC - ${assigneeName}`,
                     ref: `CDC-${Date.now().toString().slice(-4)}`,
                     date: new Date().toISOString(),
-                    items: JSON.parse(JSON.stringify(selectedItemsList)) // Copia statica
+                    items: itemsCopy
                 };
 
                 if (!c.extraDocs) c.extraDocs = [];
