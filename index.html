@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 
     <style>
-        /* --- STILI CORE --- */
+        /* --- STILI CORE --- (inchangé, gardé pour concision) */
         :root {
             --primary: #0F172A;        
             --bg-body: #F8FAFC;        
@@ -252,20 +252,15 @@
             <button style="background:none; border:none; font-size:1.2rem;" onclick="App.nav('settings')"><i class="fas fa-cog"></i></button>
         </header>
         <div class="home-fixed-area">
-            <div class="welcome-block"><div class="welcome-name">Bonjour, Jean</div><div class="welcome-date" id="home-date-display">...</div></div>
-            <div class="action-grid">
-                <button class="big-btn btn-chantier" onclick="App.nav('projets')"><i class="fas fa-hard-hat"></i><span>CHANTIERS</span></button>
-                <button class="big-btn btn-client" onclick="App.nav('clients')"><i class="fas fa-users"></i><span>CLIENTS</span></button>
-                <button class="big-btn btn-agenda-full" onclick="App.openAgenda()" style="grid-column:span 2; height:70px; flex-direction:row; gap:15px; border:1px solid var(--border); border-bottom:3px solid #CBD5E1;">
-                    <i class="fas fa-calendar-alt" style="color:#64748B; font-size:1.6rem;"></i>
-                    <div style="text-align:left"><span style="display:block; font-size:0.9rem;">AGENDA</span><span style="font-size:0.7rem; color:var(--text-sub); font-weight:500;">Gestion RDV</span></div>
-                </button>
+            <div class="welcome-block"><div class="welcome-name">Bonjour, <span id="home-username">Jean</span></div><div class="welcome-date" id="home-date-display">...</div></div>
+            <div class="action-grid" id="home-action-grid">
+                <!-- Les boutons seront affichés conditionnellement selon le rôle -->
             </div>
         </div>
         <div class="scroll-content">
             <div class="section-separator" style="border:none; margin-top:0;"><div class="section-title">Aujourd'hui</div><button class="action-create-btn" onclick="App.openAgenda()">+ RDV</button></div>
             <div id="home-today-list"></div>
-            <div style="margin-top:25px; background: #FEF2F2; padding:15px; border-radius:12px; border:1px solid #FECACA; display:flex; justify-content:space-between; align-items:center;" onclick="App.nav('factures-global')">
+            <div style="margin-top:25px; background: #FEF2F2; padding:15px; border-radius:12px; border:1px solid #FECACA; display:flex; justify-content:space-between; align-items:center;" onclick="App.nav('factures-global')" id="home-unpaid-block">
                 <div><div style="font-size:0.75rem; color:#991B1B; font-weight:700; text-transform:uppercase;">À Encaisser</div><div class="kpi-val" id="home-unpaid" style="color:#B91C1C; font-size:1.3rem; font-weight:800;">0,00 €</div></div>
                 <i class="fas fa-chevron-right" style="color:#B91C1C"></i>
             </div>
@@ -285,20 +280,24 @@
                 <div style="background:rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; color:white; display:inline-block; margin-top:10px;" id="hub-ref">REF</div>
             </div>
             <div style="padding: 0 20px 120px 20px;">
-                <div class="section-separator"><span class="section-title" style="color:var(--col-devis)">Devis</span><button class="action-create-btn" style="background:var(--col-devis); color:white; border:none;" onclick="App.createNewDevis()"><i class="fas fa-plus"></i> Créer</button></div>
-                <div id="hub-devis-list"></div>
+                <!-- Les sections Devis et Factures sont masquées si collaborateur -->
+                <div id="hub-devis-section" style="display: none;">
+                    <div class="section-separator"><span class="section-title" style="color:var(--col-devis)">Devis</span><button class="action-create-btn" style="background:var(--col-devis); color:white; border:none;" onclick="App.createNewDevis()"><i class="fas fa-plus"></i> Créer</button></div>
+                    <div id="hub-devis-list"></div>
+                </div>
                 
                 <div class="section-separator">
                     <span class="section-title" style="color:var(--col-cdc)">Cahier des Charges</span>
-                    <div style="display:flex; gap:5px;">
-                        <button class="action-create-btn" onclick="App.generateRoomReportPDF()" style="border-color: #3B82F6; color: #3B82F6;"><i class="fas fa-map-marked-alt"></i> Zones PDF</button>
-                        <button class="action-create-btn" onclick="App.openSelectCDCModal()"><i class="fas fa-tasks"></i> Gérer</button>
+                    <div style="display:flex; gap:5px;" id="hub-cdc-buttons">
+                        <!-- Les boutons de gestion CDC peuvent être masqués pour collaborateur -->
                     </div>
                 </div>
                 <div id="hub-docs-list"></div>
                 
-                <div class="section-separator"><span class="section-title" style="color:var(--col-facture)">Factures</span><button class="action-create-btn" onclick="App.openCreateInvoiceModal()"><i class="fas fa-euro-sign"></i> Facture</button></div>
-                <div id="hub-factures-list"></div>
+                <div id="hub-factures-section" style="display: none;">
+                    <div class="section-separator"><span class="section-title" style="color:var(--col-facture)">Factures</span><button class="action-create-btn" onclick="App.openCreateInvoiceModal()"><i class="fas fa-euro-sign"></i> Facture</button></div>
+                    <div id="hub-factures-list"></div>
+                </div>
             </div>
         </div>
     </main>
@@ -606,11 +605,28 @@
 
         const Auth = {
             user: null,
+            role: 'admin', // par défaut admin, sera mis à jour après chargement du profil
             async init() {
                 const { data } = await sbClient.auth.getSession();
                 if (data.session) {
                     this.user = data.session.user;
                     document.getElementById('login-overlay').style.display = 'none';
+                    
+                    // Récupérer le rôle depuis la table profiles (ou métadonnées)
+                    const { data: profile, error } = await sbClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', this.user.id)
+                        .single();
+                    
+                    if (profile && profile.role) {
+                        this.role = profile.role;
+                    } else {
+                        // Si pas de profil, on crée un profil admin par défaut
+                        this.role = 'admin';
+                        await sbClient.from('profiles').insert({ id: this.user.id, role: 'admin' });
+                    }
+                    
                     Store.init();
                 } else {
                     document.getElementById('login-overlay').style.display = 'flex';
@@ -631,6 +647,21 @@
                     msg.innerText = "Errore: " + error.message;
                 } else {
                     this.user = data.user;
+                    
+                    // Récupérer le rôle
+                    const { data: profile } = await sbClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', this.user.id)
+                        .single();
+                    
+                    if (profile && profile.role) {
+                        this.role = profile.role;
+                    } else {
+                        this.role = 'admin';
+                        await sbClient.from('profiles').insert({ id: this.user.id, role: 'admin' });
+                    }
+                    
                     document.getElementById('login-overlay').style.display = 'none';
                     Store.init();
                 }
@@ -703,6 +734,9 @@
                     setTimeout(() => App.openSetupModal(), 1000);
                 }
                 
+                // Appliquer les restrictions selon le rôle
+                App.applyRoleRestrictions();
+                
                 App.nav('home');
             },
 
@@ -726,6 +760,63 @@
             state: { invType:'acompte', tempClientType: 'particulier', viewMode: 'pieces', selectedItems: new Set(), lastPiece: 'Général', libCategory: null, libSubCategory: null, isEditing: false, tempLibItem: null, sigPad: null, currentCDCItemForPhoto: null, currentCDCDocForPhoto: null },
             
             init() { Auth.init(); },
+
+            // Nouvelle fonction pour appliquer les restrictions selon le rôle
+            applyRoleRestrictions() {
+                const isAdmin = Auth.role === 'admin';
+                
+                // Masquer/afficher les éléments de navigation selon le rôle
+                const navDocs = document.getElementById('nav-documents');
+                const navClients = document.getElementById('nav-clients');
+                const navSettings = document.getElementById('nav-settings');
+                
+                if (!isAdmin) {
+                    // Collaborateur : masquer certains onglets
+                    if (navDocs) navDocs.style.display = 'none';
+                    if (navClients) navClients.style.display = 'none';
+                    if (navSettings) navSettings.style.display = 'none';
+                    
+                    // Sur l'accueil, masquer les boutons non autorisés
+                    document.getElementById('home-action-grid').innerHTML = `
+                        <button class="big-btn btn-chantier" onclick="App.nav('projets')"><i class="fas fa-hard-hat"></i><span>CHANTIERS</span></button>
+                        <button class="big-btn btn-agenda-full" onclick="App.openAgenda()" style="grid-column:span 2; height:70px; flex-direction:row; gap:15px; border:1px solid var(--border); border-bottom:3px solid #CBD5E1;">
+                            <i class="fas fa-calendar-alt" style="color:#64748B; font-size:1.6rem;"></i>
+                            <div style="text-align:left"><span style="display:block; font-size:0.9rem;">AGENDA</span><span style="font-size:0.7rem; color:var(--text-sub); font-weight:500;">Gestion RDV</span></div>
+                        </button>
+                    `;
+                    
+                    // Masquer le bloc "À encaisser"
+                    document.getElementById('home-unpaid-block').style.display = 'none';
+                    
+                    // Dans le hub, masquer les sections Devis et Factures
+                    document.getElementById('hub-devis-section').style.display = 'none';
+                    document.getElementById('hub-factures-section').style.display = 'none';
+                    
+                    // Dans les boutons CDC, ne laisser que "Zones PDF" (pas de gestion)
+                    document.getElementById('hub-cdc-buttons').innerHTML = `
+                        <button class="action-create-btn" onclick="App.generateRoomReportPDF()" style="border-color: #3B82F6; color: #3B82F6;"><i class="fas fa-map-marked-alt"></i> Zones PDF</button>
+                    `;
+                    
+                    // Dans la liste des projets, on peut tout laisser (consultation)
+                } else {
+                    // Admin : tout afficher
+                    document.getElementById('home-action-grid').innerHTML = `
+                        <button class="big-btn btn-chantier" onclick="App.nav('projets')"><i class="fas fa-hard-hat"></i><span>CHANTIERS</span></button>
+                        <button class="big-btn btn-client" onclick="App.nav('clients')"><i class="fas fa-users"></i><span>CLIENTS</span></button>
+                        <button class="big-btn btn-agenda-full" onclick="App.openAgenda()" style="grid-column:span 2; height:70px; flex-direction:row; gap:15px; border:1px solid var(--border); border-bottom:3px solid #CBD5E1;">
+                            <i class="fas fa-calendar-alt" style="color:#64748B; font-size:1.6rem;"></i>
+                            <div style="text-align:left"><span style="display:block; font-size:0.9rem;">AGENDA</span><span style="font-size:0.7rem; color:var(--text-sub); font-weight:500;">Gestion RDV</span></div>
+                        </button>
+                    `;
+                    document.getElementById('home-unpaid-block').style.display = 'flex';
+                    document.getElementById('hub-devis-section').style.display = 'block';
+                    document.getElementById('hub-factures-section').style.display = 'block';
+                    document.getElementById('hub-cdc-buttons').innerHTML = `
+                        <button class="action-create-btn" onclick="App.generateRoomReportPDF()" style="border-color: #3B82F6; color: #3B82F6;"><i class="fas fa-map-marked-alt"></i> Zones PDF</button>
+                        <button class="action-create-btn" onclick="App.openSelectCDCModal()"><i class="fas fa-tasks"></i> Gérer</button>
+                    `;
+                }
+            },
 
             openSetupModal() {
                 const rate = prompt("Benvenuto! Per calcolare i prezzi correttamente, inserisci la tua Tariffa Oraria (€/h):", Store.data.settings.hourlyRate);
@@ -825,26 +916,33 @@
                 document.getElementById('hub-name').innerText = c.name; document.getElementById('hub-client').innerText = cli ? cli.nom : '?'; document.getElementById('hub-ref').innerText = c.ref;
                 
                 const ld = document.getElementById('hub-devis-list'); ld.innerHTML=''; 
-                c.devisList.forEach(d => { 
-                    const isSigned = d.signature ? true : false;
-                    const signIcon = isSigned 
-                        ? `<i class="fas fa-pen-nib" style="color:#16a34a; font-size:1.2rem; padding:10px;"></i>` 
-                        : `<i class="fas fa-pen-nib" style="color:#CBD5E1; font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.promptSignature(${d.id})"></i>`;
+                if (Auth.role === 'admin') {
+                    c.devisList.forEach(d => { 
+                        const isSigned = d.signature ? true : false;
+                        const signIcon = isSigned 
+                            ? `<i class="fas fa-pen-nib" style="color:#16a34a; font-size:1.2rem; padding:10px;"></i>` 
+                            : `<i class="fas fa-pen-nib" style="color:#CBD5E1; font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.promptSignature(${d.id})"></i>`;
 
-                    ld.innerHTML+=`<div class="card-item" style="border-left:4px solid var(--col-devis); background:var(--bg-devis);"><div class="card-info" onclick="App.openEditor(${d.id})"><div class="card-title">${d.name}</div><div class="card-sub">${App.formatMoney(d.total)}</div></div>${signIcon}<i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('devis', ${d.id})"></i><i class="fas fa-trash" style="color:#CBD5E1; font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteDevis(${d.id})"></i><i class="fas fa-pen" style="color:#CBD5E1; margin-left:10px;" onclick="App.openEditor(${d.id})"></i></div>`; 
-                });
+                        ld.innerHTML+=`<div class="card-item" style="border-left:4px solid var(--col-devis); background:var(--bg-devis);"><div class="card-info" onclick="App.openEditor(${d.id})"><div class="card-title">${d.name}</div><div class="card-sub">${App.formatMoney(d.total)}</div></div>${signIcon}<i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('devis', ${d.id})"></i><i class="fas fa-trash" style="color:#CBD5E1; font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteDevis(${d.id})"></i><i class="fas fa-pen" style="color:#CBD5E1; margin-left:10px;" onclick="App.openEditor(${d.id})"></i></div>`; 
+                    });
+                }
 
+                // Affichage CDC avec tri par date décroissante
                 const lcdc = document.getElementById('hub-docs-list'); lcdc.innerHTML = '';
                 if(c.extraDocs) {
-                    c.extraDocs.forEach(doc => {
+                    // Tri par date décroissante
+                    const sortedDocs = [...c.extraDocs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    sortedDocs.forEach(doc => {
                         lcdc.innerHTML += `<div class="card-item" style="border-left:4px solid var(--col-cdc); background:var(--bg-cdc);"><div class="card-info"><div class="card-title">${doc.name}</div><div class="card-sub">${doc.ref}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateCDCPDF('${doc.id}')"></i><i class="fas fa-trash" style="color:#CBD5E1; font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteCDC('${doc.id}')"></i></div>`;
                     });
                 }
 
                 const lf = document.getElementById('hub-factures-list'); lf.innerHTML=''; 
-                c.factures.forEach(f => { 
-                    lf.innerHTML+=`<div class="card-item" style="border-left:4px solid var(--col-facture); background:var(--bg-facture);"><div class="card-info"><div class="card-title">${f.ref}</div><div class="card-sub">${App.formatMoney(f.amount)}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('facture', ${f.id})"></i></div>`; 
-                });
+                if (Auth.role === 'admin') {
+                    c.factures.forEach(f => { 
+                        lf.innerHTML+=`<div class="card-item" style="border-left:4px solid var(--col-facture); background:var(--bg-facture);"><div class="card-info"><div class="card-title">${f.ref}</div><div class="card-sub">${App.formatMoney(f.amount)}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('facture', ${f.id})"></i></div>`; 
+                    });
+                }
                 this.nav('hub');
             },
             
@@ -1621,9 +1719,7 @@
                     return App.showToast("Erreur upload : " + error.message);
                 }
 
-                // Récupérer l'URL publique (le bucket est privé, on génère une URL signée ? Pour simplifier, on rend le bucket public ? Non, on va générer une URL signée)
-                // Pour simplifier, on va supposer que le bucket est public (si vous avez mis public à true). Sinon, il faut générer une URL signée.
-                // Ici on va générer une URL signée valable 1 an.
+                // Récupérer l'URL publique (le bucket est privé, on génère une URL signée)
                 const { data: urlData, error: urlError } = await sbClient.storage
                     .from('cdc-photos')
                     .createSignedUrl(fileName, 31536000); // 1 an
@@ -1972,9 +2068,10 @@
                 App.renderSelectionList(); // Ricarica la lista per vedere i badge
             },
 
-            // AJOUT CDC PHOTOS : Modification de saveCDC pour initialiser photos: []
+            // AJOUT CDC PHOTOS : Modification de saveCDC pour inclure la date et le nom enrichi
             saveCDC() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+                const cli = Store.data.clients.find(x => x.id == c.clientId);
                 const did = document.getElementById('sel-source-devis').value;
                 const d = c.devisList.find(x => x.id == did);
                 
@@ -1983,7 +2080,14 @@
                 const selectedItemsList = d.items.filter(i => App.state.selectedItems.has(i.id));
                 const assigneeName = document.getElementById('cdc-assignee').value || "Général";
                 
-                // Copia statica degli elementi, aggiungendo il campo photos vuoto
+                // Création du nom enrichi : Date + Client + Chantier
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('fr-FR').replace(/\//g, '-'); // JJ-MM-AAAA
+                const clientName = cli ? cli.nom.replace(/\s+/g, '_') : 'Client';
+                const chantierName = c.name.replace(/\s+/g, '_');
+                const enrichedName = `${dateStr}_${clientName}_${chantierName}`;
+                
+                // Copie statica degli elementi, aggiungendo il campo photos vuoto
                 const itemsCopy = selectedItemsList.map(item => ({
                     ...item,
                     photos: [] // AJOUT CDC PHOTOS
@@ -1991,7 +2095,7 @@
                 
                 const newDoc = {
                     id: Date.now(),
-                    name: `CDC - ${assigneeName}`,
+                    name: enrichedName,
                     ref: `CDC-${Date.now().toString().slice(-4)}`,
                     date: new Date().toISOString(),
                     items: itemsCopy
