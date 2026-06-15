@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 
     <style>
-        /* --- STILI CORE --- (inchangé, gardé pour concision) */
+        /* --- STILI CORE --- (invariati) */
         :root {
             --primary: #0F172A;        
             --bg-body: #F8FAFC;        
@@ -87,7 +87,6 @@
         #view-editor { display: none; flex-direction: column; height: 100%; background: #F8FAFC; }
         #view-editor.active { display: flex; }
         .editor-header-musk { flex-shrink: 0; background: var(--col-devis); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; z-index: 30; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); color: white; }
-        /* Fix text colors inside editor header since background is now colored */
         #view-editor .header-back-container { color: white; opacity: 0.9; }
         #view-editor .logo-text { color: white; } 
         #view-editor .client-badge { color: rgba(255,255,255,0.8); }
@@ -1173,7 +1172,8 @@
 
             // --- NUOVA LOGICA "ROOM SELECTOR" V7 (STICKY & SMART) ---
             openLibrary() {
-                const categories = Object.keys(Config.LIB).sort();
+                // ★ MODIFICA: ordinamento personalizzato
+                const categories = App.sortCategories(Object.keys(Config.LIB));
                 if(categories.length === 0) return App.showToast("Caricamento biblioteca...");
                 
                 // RESET VARIABILI
@@ -1350,7 +1350,7 @@
                     displayName += ` (${details})`;
                 }
 
-                // Imposta visualmente
+                // Imposta visivamente
                 App.setRoomActiveVisuals(displayName);
                 
                 // Aggiunge subito il bottone in alto
@@ -1359,7 +1359,7 @@
                 App.toggleRoomEdit(false);
             },
 
-            // --- NAVIGAZIONE 3 LIVELLI ---
+            // --- NAVIGAZIONE 3 LIVELLI CON ORDINAMENTO PERSONALIZZATO ---
             renderLibraryItems() {
                 const cont = document.getElementById('lib-container'); 
                 cont.innerHTML = '';
@@ -1381,10 +1381,10 @@
                     return;
                 }
 
-                // 2. LIVELLO RADICE (Famiglie)
+                // 2. LIVELLO RADICE (Famiglie) - ORDINATE CON sortCategories
                 if (App.state.libCategory === null && !selectedCat) {
                     breadcrumb.style.display = 'none';
-                    const categories = Object.keys(Config.LIB).sort();
+                    const categories = App.sortCategories(Object.keys(Config.LIB));
                     let grid = document.createElement('div');
                     grid.style.cssText = "display:grid; grid-template-columns: 1fr 1fr; gap:12px; padding-top:10px;";
                     categories.forEach(cat => {
@@ -1882,236 +1882,4 @@
                         <tr style="border-bottom:1px solid #eee;">
                             <td style="padding:10px;">${i.desc}</td>
                             <td style="padding:10px; text-align:center;">${i.qty}</td>
-                            <td style="padding:10px; text-align:center; font-size:0.85rem; color:#64748b;">${costLabor > 0 ? App.formatMoney(costLabor) : '-'}</td>
-                            <td style="padding:10px; text-align:center; font-size:0.85rem; color:#64748b;">${costMat > 0 ? App.formatMoney(costMat) : '-'}</td>
-                            <td style="padding:10px; text-align:right;">${App.formatMoney(i.price)}</td>
-                            <td style="padding:10px; text-align:right; font-weight:bold;">${App.formatMoney(rowT)}</td>
-                        </tr>`;
-                }).join('');
-                
-                const html = `
-                    <div style="font-family:sans-serif; padding:30px; color:#334155;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px;">
-                            <div>
-                                <h1 style="color:#0f172a; margin:0;">${title}</h1>
-                                <div style="color:#64748b; font-size:0.9rem;">${ref}</div>
-                            </div>
-                            <div style="text-align:right;">
-                                <strong>QOTIA ENTREPRISE</strong><br>123 Rue Exemple<br>06000 NICE
-                            </div>
-                        </div>
-                        <div style="background:#f1f5f9; padding:20px; border-radius:10px; margin-bottom:30px;">
-                            <strong>CLIENT:</strong><br>
-                            <span style="font-size:1.2rem; font-weight:bold; color:#0f172a;">${cli.nom}</span><br>
-                            ${cli.addr}<br>${cli.tel||''}
-                        </div>
-                        <table style="width:100%; border-collapse:collapse; font-size:0.9rem; margin-bottom:30px;">
-                            <thead style="background:#0f172a; color:white;">
-                                <tr>
-                                    <th style="padding:12px; text-align:left;">Description</th>
-                                    <th style="padding:12px; text-align:center;">Qté</th>
-                                    <th style="padding:12px; text-align:center;">M.O. (U)</th>
-                                    <th style="padding:12px; text-align:center;">Mat. (U)</th>
-                                    <th style="padding:12px; text-align:right;">P.U.</th>
-                                    <th style="padding:12px; text-align:right;">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                        <div style="text-align:right; margin-bottom:20px;">
-                            <div style="font-size:1.5rem; font-weight:900; color:#0f172a;">TOTAL A PAYER: ${App.formatMoney(totalTTC)}</div>
-                            ${extraInfo}
-                        </div>
-                        ${signatureBlock}
-                        <div style="height:30px;"></div> </div>`;
-                const opt = { margin: 10, filename: `${title}_${ref}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-                html2pdf().set(opt).from(html).save();
-                App.showToast("PDF Téléchargé");
-            },
-
-            generateCDCPDF(docId) {
-                const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId);
-                const doc = c.extraDocs.find(x => x.id == docId);
-                if (!doc) return;
-
-                const items = doc.items;
-                
-                // Calculate Gravats for this specific CDC
-                let cdcGravats = 0;
-                let rows = items.map(i => {
-                    cdcGravats += i.qty * (i.gravats || 0);
-                    return `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${i.desc}</td><td style="padding:10px; border-bottom:1px solid #eee;">${i.piece||'-'}</td><td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">${i.qty} ${i.unit}</td></tr>`;
-                }).join('');
-
-                let gravatsInfo = "";
-                if(cdcGravats > 0) {
-                    gravatsInfo = `<div style="margin-top:20px; padding:10px; background:#f1f5f9; border-radius:5px;"><strong>Volume Gravats pour ces travaux:</strong> ${cdcGravats.toFixed(2)} m³</div>`;
-                }
-
-                const html = `
-                    <div style="font-family:sans-serif; padding:30px;">
-                        <h1>${doc.name}</h1>
-                        <h3>Projet: ${c.name} - ${doc.ref}</h3>
-                        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
-                            <thead style="background:#0f172a; color:white;"><tr><th style="padding:10px; text-align:left;">Tâche</th><th style="padding:10px; text-align:left;">Zone</th><th style="padding:10px; text-align:left;">Qté</th></tr></thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                        ${gravatsInfo}
-                    </div>
-                `;
-                const opt = { margin: 10, filename: `${doc.name}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-                html2pdf().set(opt).from(html).save();
-            },
-
-            // --- FUNZIONI CAHIER DES CHARGES (CDC) ---
-            openSelectCDCModal() {
-                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
-                if (!c.devisList || c.devisList.length === 0) return alert("Crea prima un devis!");
-                
-                // Popola Devis
-                const s = document.getElementById('sel-source-devis');
-                s.innerHTML = '';
-                c.devisList.forEach(d => {
-                    let o = document.createElement('option');
-                    o.value = d.id; o.text = d.name;
-                    s.appendChild(o);
-                });
-
-                // Popola Partner
-                const pSel = document.getElementById('cdc-assignee');
-                pSel.innerHTML = '<option value="">-- Seleziona Partner --</option>';
-                (Store.data.partners || []).forEach(p => {
-                    let o = document.createElement('option');
-                    o.value = p.name; o.text = `${p.name} (${p.role})`;
-                    pSel.appendChild(o);
-                });
-
-                App.state.selectedItems = new Set();
-                App.renderSelectionList();
-                document.getElementById('modal-select-cdc').classList.add('open');
-            },
-
-            renderSelectionList() {
-                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
-                const did = document.getElementById('sel-source-devis').value;
-                if (!did) return;
-                
-                const d = c.devisList.find(x => x.id == did);
-                const cont = document.getElementById('selection-list-container');
-                cont.innerHTML = '';
-
-                d.items.forEach(item => {
-                    const isChecked = App.state.selectedItems.has(item.id) ? 'checked' : '';
-                    const assignedInfo = item.assignedTo 
-                        ? `<span class="assigned-badge"><i class="fas fa-user"></i> ${item.assignedTo}</span>` 
-                        : '';
-                    
-                    const el = document.createElement('div');
-                    el.className = 'check-container';
-                    el.onclick = (e) => App.toggleItemSelection(item.id, el);
-                    el.innerHTML = `
-                        <div class="custom-checkbox ${isChecked}"></div>
-                        <div style="flex:1">
-                            <div style="font-weight:700; font-size:0.9rem;">${item.desc}</div>
-                            <div style="font-size:0.8rem; color:var(--text-sub); display:flex; align-items:center;">
-                                ${item.piece || 'Général'} ${assignedInfo}
-                            </div>
-                        </div>
-                    `;
-                    cont.appendChild(el);
-                });
-            },
-
-            toggleItemSelection(id, el) {
-                if (App.state.selectedItems.has(id)) {
-                    App.state.selectedItems.delete(id);
-                    el.querySelector('.custom-checkbox').classList.remove('checked');
-                } else {
-                    App.state.selectedItems.add(id);
-                    el.querySelector('.custom-checkbox').classList.add('checked');
-                }
-            },
-
-            selectAllItems() {
-                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
-                const did = document.getElementById('sel-source-devis').value;
-                const d = c.devisList.find(x => x.id == did);
-                
-                const allSelected = (App.state.selectedItems.size === d.items.length);
-                
-                if (allSelected) {
-                    App.state.selectedItems.clear();
-                } else {
-                    d.items.forEach(i => App.state.selectedItems.add(i.id));
-                }
-                App.renderSelectionList();
-            },
-
-            assignCollaborator() {
-                if(App.state.selectedItems.size === 0) return alert("Seleziona almeno un lavoro.");
-                const name = document.getElementById('cdc-assignee').value;
-                if(!name) return alert("Seleziona un partner dalla lista.");
-                
-                const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId);
-                const d = c.devisList.find(x=>x.id==document.getElementById('sel-source-devis').value);
-                
-                let count = 0;
-                d.items.forEach(i => {
-                    if(App.state.selectedItems.has(i.id)) {
-                        i.assignedTo = name;
-                        count++;
-                    }
-                });
-                
-                Store.save();
-                App.showToast(`${count} lavori assegnati a ${name}`);
-                App.renderSelectionList(); // Ricarica la lista per vedere i badge
-            },
-
-            // AJOUT CDC PHOTOS : Modification de saveCDC pour inclure la date et le nom enrichi
-            saveCDC() {
-                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
-                const cli = Store.data.clients.find(x => x.id == c.clientId);
-                const did = document.getElementById('sel-source-devis').value;
-                const d = c.devisList.find(x => x.id == did);
-                
-                if (App.state.selectedItems.size === 0) return alert("Seleziona gli elementi da includere nel CDC.");
-
-                const selectedItemsList = d.items.filter(i => App.state.selectedItems.has(i.id));
-                const assigneeName = document.getElementById('cdc-assignee').value || "Général";
-                
-                // Création du nom enrichi : Date + Client + Chantier
-                const today = new Date();
-                const dateStr = today.toLocaleDateString('fr-FR').replace(/\//g, '-'); // JJ-MM-AAAA
-                const clientName = cli ? cli.nom.replace(/\s+/g, '_') : 'Client';
-                const chantierName = c.name.replace(/\s+/g, '_');
-                const enrichedName = `${dateStr}_${clientName}_${chantierName}`;
-                
-                // Copie statica degli elementi, aggiungendo il campo photos vuoto
-                const itemsCopy = selectedItemsList.map(item => ({
-                    ...item,
-                    photos: [] // AJOUT CDC PHOTOS
-                }));
-                
-                const newDoc = {
-                    id: Date.now(),
-                    name: enrichedName,
-                    ref: `CDC-${Date.now().toString().slice(-4)}`,
-                    date: new Date().toISOString(),
-                    items: itemsCopy
-                };
-
-                if (!c.extraDocs) c.extraDocs = [];
-                c.extraDocs.push(newDoc);
-                Store.save();
-                
-                App.showToast("Documento CDC creato!");
-                App.closeModal('modal-select-cdc');
-                App.openHub(c.id);
-            }
-        };
-
-        window.onload = () => App.init();
-    </script>
-</body>
-</html>
+                            <td style="padding:10px; text-align:center;
