@@ -761,15 +761,6 @@
             
             init() { Auth.init(); },
 
-            // Tri des catégories par préfixe numérique (ex. "1 - Ouvrages")
-            sortCategories: function(cats) {
-                return cats.sort((a, b) => {
-                    const numA = parseInt(a.match(/^(\d+)/)?.[1]) || Infinity;
-                    const numB = parseInt(b.match(/^(\d+)/)?.[1]) || Infinity;
-                    return numA - numB;
-                });
-            },
-
             // Nouvelle fonction pour appliquer les restrictions selon le rôle
             applyRoleRestrictions() {
                 const isAdmin = Auth.role === 'admin';
@@ -841,6 +832,15 @@
                 const laborCost = (item.labor_time || 0) * rate;
                 const matCost = (item.material_cost || 0);
                 return laborCost + matCost;
+            },
+
+            // Tri des catégories par préfixe numérique (ex. "1 - Ouvrages")
+            sortCategories: function(cats) {
+                return cats.sort((a, b) => {
+                    const numA = parseInt(a.match(/^(\d+)/)?.[1]) || Infinity;
+                    const numB = parseInt(b.match(/^(\d+)/)?.[1]) || Infinity;
+                    return numA - numB;
+                });
             },
 
             nav(view) {
@@ -1182,7 +1182,7 @@
 
             // --- NUOVA LOGICA "ROOM SELECTOR" V7 (STICKY & SMART) ---
             openLibrary() {
-                // MODIFICA: ordinamento personalizzato
+                // MODIFICA 1: ordinamento personalizzato
                 const categories = App.sortCategories(Object.keys(Config.LIB));
                 if(categories.length === 0) return App.showToast("Caricamento biblioteca...");
                 
@@ -1369,7 +1369,7 @@
                 App.toggleRoomEdit(false);
             },
 
-            // --- NAVIGAZIONE 3 LIVELLI CON ORDINAMENTO PERSONALIZZATO ---
+            // --- NAVIGAZIONE 3 LIVELLI CON ORDINAMENTO ---
             renderLibraryItems() {
                 const cont = document.getElementById('lib-container'); 
                 cont.innerHTML = '';
@@ -1391,7 +1391,7 @@
                     return;
                 }
 
-                // 2. LIVELLO RADICE (Famiglie) - ORDINATE CON sortCategories
+                // 2. LIVELLO RADICE (Famiglie) - MODIFICA 2: ordinamento personalizzato
                 if (App.state.libCategory === null && !selectedCat) {
                     breadcrumb.style.display = 'none';
                     const categories = App.sortCategories(Object.keys(Config.LIB));
@@ -1876,4 +1876,5 @@
                     }
 
                 } else {
-                    const obj = c.factures
+                    const obj = c.factures.find(x=>x.id==id);
+                    title = "FACTURE"; ref = obj.ref; items = [{desc: `Facture
