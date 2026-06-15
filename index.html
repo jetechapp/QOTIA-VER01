@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 
     <style>
-        /* --- STILI CORE --- (invariati) */
+        /* --- STILI CORE --- (inchangé, gardé pour concision) */
         :root {
             --primary: #0F172A;        
             --bg-body: #F8FAFC;        
@@ -87,6 +87,7 @@
         #view-editor { display: none; flex-direction: column; height: 100%; background: #F8FAFC; }
         #view-editor.active { display: flex; }
         .editor-header-musk { flex-shrink: 0; background: var(--col-devis); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; z-index: 30; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); color: white; }
+        /* Fix text colors inside editor header since background is now colored */
         #view-editor .header-back-container { color: white; opacity: 0.9; }
         #view-editor .logo-text { color: white; } 
         #view-editor .client-badge { color: rgba(255,255,255,0.8); }
@@ -760,6 +761,15 @@
             
             init() { Auth.init(); },
 
+            // Tri des catégories par préfixe numérique (ex. "1 - Ouvrages")
+            sortCategories: function(cats) {
+                return cats.sort((a, b) => {
+                    const numA = parseInt(a.match(/^(\d+)/)?.[1]) || Infinity;
+                    const numB = parseInt(b.match(/^(\d+)/)?.[1]) || Infinity;
+                    return numA - numB;
+                });
+            },
+
             // Nouvelle fonction pour appliquer les restrictions selon le rôle
             applyRoleRestrictions() {
                 const isAdmin = Auth.role === 'admin';
@@ -1172,7 +1182,7 @@
 
             // --- NUOVA LOGICA "ROOM SELECTOR" V7 (STICKY & SMART) ---
             openLibrary() {
-                // ★ MODIFICA: ordinamento personalizzato
+                // MODIFICA: ordinamento personalizzato
                 const categories = App.sortCategories(Object.keys(Config.LIB));
                 if(categories.length === 0) return App.showToast("Caricamento biblioteca...");
                 
@@ -1866,20 +1876,4 @@
                     }
 
                 } else {
-                    const obj = c.factures.find(x=>x.id==id);
-                    title = "FACTURE"; ref = obj.ref; items = [{desc: `Facture selon avancement (${obj.type})`, qty: 1, unit:'U', price: obj.amount, time:0, material_cost:0}];
-                }
-                
-                let totalTTC = 0;
-                let rows = items.map(i => {
-                    const rowT = i.qty * i.price; totalTTC += rowT;
-                    
-                    // Calc single costs
-                    const costLabor = (i.time || 0) * rate;
-                    const costMat = (i.material_cost || 0);
-
-                    return `
-                        <tr style="border-bottom:1px solid #eee;">
-                            <td style="padding:10px;">${i.desc}</td>
-                            <td style="padding:10px; text-align:center;">${i.qty}</td>
-                            <td style="padding:10px; text-align:center;
+                    const obj = c.factures
