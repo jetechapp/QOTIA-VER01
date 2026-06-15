@@ -1141,26 +1141,72 @@
                         l.innerHTML += html + `</div>`;
                     }
                 } else {
-                    const aggregated = {};
+                    const groupedByFamily = {};
+
                     d.items.forEach(i => {
+                        let cat = i.category;
+                        if (!cat) {
+                            const libMatch = Config.allItems.find(x => x.desc === i.desc);
+                            cat = libMatch ? libMatch.category : "Général";
+                            i.category = cat; // Salva per il futuro
+                        }
+
+                        if (!groupedByFamily[cat]) {
+                            groupedByFamily[cat] = { total: 0, items: {} };
+                        }
+
                         const key = i.desc + "_" + i.price;
-                        if (!aggregated[key]) aggregated[key] = { desc: i.desc, price: i.price, totalQty: 0, totalTime: 0, pieces: new Set(), totalLaborCost: 0, totalMatCost: 0 };
-                        aggregated[key].totalQty += i.qty; 
-                        aggregated[key].totalTime += (i.qty * (i.time || 0)); 
-                        aggregated[key].pieces.add(i.piece || "Général");
+                        if (!groupedByFamily[cat].items[key]) {
+                            groupedByFamily[cat].items[key] = { desc: i.desc, price: i.price, totalQty: 0, totalTime: 0, pieces: new Set(), totalLaborCost: 0, totalMatCost: 0 };
+                        }
                         
-                        aggregated[key].totalLaborCost += ((i.time || 0) * rate * i.qty);
-                        aggregated[key].totalMatCost += ((i.material_cost || 0) * i.qty);
+                        const agg = groupedByFamily[cat].items[key];
+                        agg.totalQty += i.qty; 
+                        agg.totalTime += (i.qty * (i.time || 0)); 
+                        agg.pieces.add(i.piece || "Général");
+                        
+                        agg.totalLaborCost += ((i.time || 0) * rate * i.qty);
+                        agg.totalMatCost += ((i.material_cost || 0) * i.qty);
+
+                        groupedByFamily[cat].total += (i.qty * i.price);
                     });
-                    for (const key in aggregated) {
-                        const agg = aggregated[key]; const totalP = agg.totalQty * agg.price; const locs = Array.from(agg.pieces).join(", ");
-                        l.innerHTML += `<div class="e-card" style="background:var(--bg-devis); border-left-color:var(--accent);"><div class="e-card-row"><div class="e-desc">${agg.desc}<br><span class="e-loc-tag">${locs}</span></div><div style="font-weight:800;">${App.formatMoney(totalP)}</div></div><div class="e-stats"><div class="stat-box"><div class="stat-lbl">Tot Qté</div><div class="stat-val">${agg.totalQty}</div></div><div class="stat-box"><div class="stat-lbl">Tot Time</div><div class="stat-val time">${agg.totalTime.toFixed(1)}h</div></div></div>
-                        <div class="e-stats" style="border-top:1px dashed #e2e8f0; margin-top:5px;">
-                                <div class="stat-box"><div class="stat-lbl" style="color:var(--time)">Tot M.O.</div><div class="stat-val" style="color:var(--time); font-size:0.8rem;">${App.formatMoney(agg.totalLaborCost)}</div></div>
-                                <div class="stat-box"><div class="stat-lbl" style="color:var(--material)">Tot Mat.</div><div class="stat-val" style="color:var(--material); font-size:0.8rem;">${App.formatMoney(agg.totalMatCost)}</div></div>
-                        </div>
-                        </div>`;
-                    }
+
+                    // Ordina le famiglie in base a ref_code (come estratte da Supabase)
+                    const sortedCats = [...new Set(Config.allItems.map(i => i.category))];
+                    const currentCats = Object.keys(groupedByFamily).sort((a, b) => {
+                        let idxA = sortedCats.indexOf(a);
+                        let idxB = sortedCats.indexOf(b);
+                        if(idxA === -1) idxA = 999;
+                        if(idxB === -1) idxB = 999;
+                        return idxA - idxB;
+                    });
+
+                    currentCats.forEach(cat => {
+                        const familyData = groupedByFamily[cat];
+                        
+                        // Genera l'intestazione della famiglia con il totale
+                        l.innerHTML += `
+                        <div class="piece-section">
+                            <div class="piece-header" style="background:#E2E8F0; border-left: 4px solid var(--col-devis);">
+                                <div class="piece-title"><i class="fas fa-layer-group"></i> ${cat}</div>
+                                <span style="font-weight:900; color:var(--primary);">${App.formatMoney(familyData.total)}</span>
+                            </div>
+                        `;
+                        
+                        for (const key in familyData.items) {
+                            const agg = familyData.items[key]; 
+                            const totalP = agg.totalQty * agg.price; 
+                            const locs = Array.from(agg.pieces).join(", ");
+                            l.innerHTML += `<div class="e-card" style="background:var(--bg-devis); border-left-color:var(--accent);"><div class="e-card-row"><div class="e-desc">${agg.desc}<br><span class="e-loc-tag">${locs}</span></div><div style="font-weight:800;">${App.formatMoney(totalP)}</div></div><div class="e-stats"><div class="stat-box"><div class="stat-lbl">Tot Qté</div><div class="stat-val">${agg.totalQty}</div></div><div class="stat-box"><div class="stat-lbl">Tot Time</div><div class="stat-val time">${agg.totalTime.toFixed(1)}h</div></div></div>
+                            <div class="e-stats" style="border-top:1px dashed #e2e8f0; margin-top:5px;">
+                                    <div class="stat-box"><div class="stat-lbl" style="color:var(--time)">Tot M.O.</div><div class="stat-val" style="color:var(--time); font-size:0.8rem;">${App.formatMoney(agg.totalLaborCost)}</div></div>
+                                    <div class="stat-box"><div class="stat-lbl" style="color:var(--material)">Tot Mat.</div><div class="stat-val" style="color:var(--material); font-size:0.8rem;">${App.formatMoney(agg.totalMatCost)}</div></div>
+                            </div>
+                            </div>`;
+                        }
+                        
+                        l.innerHTML += `</div>`;
+                    });
                 }
             },
 
@@ -1586,7 +1632,8 @@
                         price: price, 
                         qty: qty, 
                         piece: piece,
-                        gravats: gravats
+                        gravats: gravats,
+                        category: App.state.tempLibItem ? App.state.tempLibItem.category : "Général" // ADD THIS
                     };
                     d.items.push(newItem);
                     App.showToast("Ajouté: " + desc);
