@@ -254,8 +254,7 @@
         <div class="home-fixed-area">
             <div class="welcome-block"><div class="welcome-name">Bonjour, <span id="home-username">Jean</span></div><div class="welcome-date" id="home-date-display">...</div></div>
             <div class="action-grid" id="home-action-grid">
-                <!-- Les boutons seront affichés conditionnellement selon le rôle -->
-            </div>
+                </div>
         </div>
         <div class="scroll-content">
             <div class="section-separator" style="border:none; margin-top:0;"><div class="section-title">Aujourd'hui</div><button class="action-create-btn" onclick="App.openAgenda()">+ RDV</button></div>
@@ -280,7 +279,6 @@
                 <div style="background:rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; color:white; display:inline-block; margin-top:10px;" id="hub-ref">REF</div>
             </div>
             <div style="padding: 0 20px 120px 20px;">
-                <!-- Les sections Devis et Factures sont masquées si collaborateur -->
                 <div id="hub-devis-section" style="display: none;">
                     <div class="section-separator"><span class="section-title" style="color:var(--col-devis)">Devis</span><button class="action-create-btn" style="background:var(--col-devis); color:white; border:none;" onclick="App.createNewDevis()"><i class="fas fa-plus"></i> Créer</button></div>
                     <div id="hub-devis-list"></div>
@@ -289,8 +287,7 @@
                 <div class="section-separator">
                     <span class="section-title" style="color:var(--col-cdc)">Cahier des Charges</span>
                     <div style="display:flex; gap:5px;" id="hub-cdc-buttons">
-                        <!-- Les boutons de gestion CDC peuvent être masqués pour collaborateur -->
-                    </div>
+                        </div>
                 </div>
                 <div id="hub-docs-list"></div>
                 
@@ -395,7 +392,6 @@
         </div>
     </div>
     
-    <!-- AJOUT CDC PHOTOS : Modal pour afficher et ajouter des photos à un CDC -->
     <div id="modal-view-cahier" class="full-modal">
         <div class="modal-header">
             <h3 id="vc-title">...</h3>
@@ -406,7 +402,6 @@
         </div>
     </div>
     
-    <!-- AJOUT CDC PHOTOS : Modal pour ajouter une photo à un item -->
     <div id="modal-add-photo" class="full-modal">
         <div class="modal-header">
             <h3>Ajouter une photo</h3>
@@ -605,13 +600,14 @@
 
         const Auth = {
             user: null,
-            role: 'admin',
+            role: 'admin', // par défaut admin, sera mis à jour après chargement du profil
             async init() {
                 const { data } = await sbClient.auth.getSession();
                 if (data.session) {
                     this.user = data.session.user;
                     document.getElementById('login-overlay').style.display = 'none';
                     
+                    // Récupérer le rôle depuis la table profiles (ou métadonnées)
                     const { data: profile, error } = await sbClient
                         .from('profiles')
                         .select('role')
@@ -621,6 +617,7 @@
                     if (profile && profile.role) {
                         this.role = profile.role;
                     } else {
+                        // Si pas de profil, on crée un profil admin par défaut
                         this.role = 'admin';
                         await sbClient.from('profiles').insert({ id: this.user.id, role: 'admin' });
                     }
@@ -646,6 +643,7 @@
                 } else {
                     this.user = data.user;
                     
+                    // Récupérer le rôle
                     const { data: profile } = await sbClient
                         .from('profiles')
                         .select('role')
@@ -681,9 +679,7 @@
                     .from('library_items')
                     .select('*')
                     .range(0, 10000)
-                    .order('category', { ascending: true })
-                    .order('sub_category', { ascending: true }) 
-                    .order('desc', { ascending: true });
+                    .order('ref_code', { ascending: true }); // CAMBIO QUI: Ordinamento per ref_code
 
                 if(!libErr && libData) {
                     Config.LIB = {};
@@ -701,8 +697,8 @@
                             desc: item.desc, 
                             unit: item.unit, 
                             labor_time: item.labor_time, 
-                            material_cost: item.material_cost || 0,
-                            gravats: item.dechet || 0
+                            material_cost: item.material_cost || 0, // MAPPING MATERIAL COST
+                            gravats: item.dechet || 0 // MAPPING DECHET FROM DB
                         };
 
                         Config.LIB[cat].push(processedItem);
@@ -731,7 +727,9 @@
                     setTimeout(() => App.openSetupModal(), 1000);
                 }
                 
+                // Appliquer les restrictions selon le rôle
                 App.applyRoleRestrictions();
+                
                 App.nav('home');
             },
 
@@ -756,26 +754,22 @@
             
             init() { Auth.init(); },
 
-            // ★ NUOVA FUNZIONE DI ORDINAMENTO CATEGORIE
-            sortCategories: function(cats) {
-                return cats.sort((a, b) => {
-                    const numA = parseInt(a.match(/^(\d+)/)?.[1]) || Infinity;
-                    const numB = parseInt(b.match(/^(\d+)/)?.[1]) || Infinity;
-                    return numA - numB;
-                });
-            },
-
+            // Nouvelle fonction pour appliquer les restrictions selon le rôle
             applyRoleRestrictions() {
                 const isAdmin = Auth.role === 'admin';
+                
+                // Masquer/afficher les éléments de navigation selon le rôle
                 const navDocs = document.getElementById('nav-documents');
                 const navClients = document.getElementById('nav-clients');
                 const navSettings = document.getElementById('nav-settings');
                 
                 if (!isAdmin) {
+                    // Collaborateur : masquer certains onglets
                     if (navDocs) navDocs.style.display = 'none';
                     if (navClients) navClients.style.display = 'none';
                     if (navSettings) navSettings.style.display = 'none';
                     
+                    // Sur l'accueil, masquer les boutons non autorisés
                     document.getElementById('home-action-grid').innerHTML = `
                         <button class="big-btn btn-chantier" onclick="App.nav('projets')"><i class="fas fa-hard-hat"></i><span>CHANTIERS</span></button>
                         <button class="big-btn btn-agenda-full" onclick="App.openAgenda()" style="grid-column:span 2; height:70px; flex-direction:row; gap:15px; border:1px solid var(--border); border-bottom:3px solid #CBD5E1;">
@@ -783,13 +777,22 @@
                             <div style="text-align:left"><span style="display:block; font-size:0.9rem;">AGENDA</span><span style="font-size:0.7rem; color:var(--text-sub); font-weight:500;">Gestion RDV</span></div>
                         </button>
                     `;
+                    
+                    // Masquer le bloc "À encaisser"
                     document.getElementById('home-unpaid-block').style.display = 'none';
+                    
+                    // Dans le hub, masquer les sections Devis et Factures
                     document.getElementById('hub-devis-section').style.display = 'none';
                     document.getElementById('hub-factures-section').style.display = 'none';
+                    
+                    // Dans les boutons CDC, ne laisser que "Zones PDF" (pas de gestion)
                     document.getElementById('hub-cdc-buttons').innerHTML = `
                         <button class="action-create-btn" onclick="App.generateRoomReportPDF()" style="border-color: #3B82F6; color: #3B82F6;"><i class="fas fa-map-marked-alt"></i> Zones PDF</button>
                     `;
+                    
+                    // Dans la liste des projets, on peut tout laisser (consultation)
                 } else {
+                    // Admin : tout afficher
                     document.getElementById('home-action-grid').innerHTML = `
                         <button class="big-btn btn-chantier" onclick="App.nav('projets')"><i class="fas fa-hard-hat"></i><span>CHANTIERS</span></button>
                         <button class="big-btn btn-client" onclick="App.nav('clients')"><i class="fas fa-users"></i><span>CLIENTS</span></button>
@@ -917,8 +920,10 @@
                     });
                 }
 
+                // Affichage CDC avec tri par date décroissante
                 const lcdc = document.getElementById('hub-docs-list'); lcdc.innerHTML = '';
                 if(c.extraDocs) {
+                    // Tri par date décroissante
                     const sortedDocs = [...c.extraDocs].sort((a, b) => new Date(b.date) - new Date(a.date));
                     sortedDocs.forEach(doc => {
                         lcdc.innerHTML += `<div class="card-item" style="border-left:4px solid var(--col-cdc); background:var(--bg-cdc);"><div class="card-info"><div class="card-title">${doc.name}</div><div class="card-sub">${doc.ref}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateCDCPDF('${doc.id}')"></i><i class="fas fa-trash" style="color:#CBD5E1; font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteCDC('${doc.id}')"></i></div>`;
@@ -934,6 +939,7 @@
                 this.nav('hub');
             },
             
+            // --- SIGNATURE MODULE ---
             promptSignature(devisId) {
                 Store.data.activeDevisId = devisId;
                 document.getElementById('modal-signature').classList.add('open');
@@ -943,24 +949,37 @@
             initCanvas() {
                 const canvas = document.getElementById('sig-canvas');
                 const ctx = canvas.getContext('2d');
+                // Resize canvas to fit container
                 const rect = canvas.parentElement.getBoundingClientRect();
                 canvas.width = rect.width;
                 canvas.height = rect.height;
+                
                 ctx.lineWidth = 3;
                 ctx.lineCap = 'round';
                 ctx.strokeStyle = '#000';
+
                 let painting = false;
 
-                function start(e) { painting = true; draw(e); }
-                function end() { painting = false; ctx.beginPath(); }
+                function start(e) {
+                    painting = true;
+                    draw(e);
+                }
+
+                function end() {
+                    painting = false;
+                    ctx.beginPath();
+                }
+
                 function draw(e) {
                     if (!painting) return;
                     e.preventDefault();
                     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                    
                     const rect = canvas.getBoundingClientRect();
                     const x = clientX - rect.left;
                     const y = clientY - rect.top;
+
                     ctx.lineTo(x, y);
                     ctx.stroke();
                     ctx.beginPath();
@@ -970,40 +989,77 @@
                 canvas.onmousedown = start;
                 canvas.onmouseup = end;
                 canvas.onmousemove = draw;
+
                 canvas.ontouchstart = start;
                 canvas.ontouchend = end;
                 canvas.ontouchmove = draw;
+                
                 App.state.sigPad = { canvas, ctx };
             },
 
-            clearSignature() { const { canvas, ctx } = App.state.sigPad; ctx.clearRect(0, 0, canvas.width, canvas.height); },
+            clearSignature() {
+                const { canvas, ctx } = App.state.sigPad;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            },
+
             saveSignature() {
                 const { canvas } = App.state.sigPad;
+                // Check if empty (optional, skip for simplicity)
                 const dataUrl = canvas.toDataURL("image/png");
+                
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 const d = c.devisList.find(x => x.id == Store.data.activeDevisId);
-                d.signature = dataUrl; d.status = "Accepté"; d.signDate = new Date().toLocaleDateString('fr-FR');
+                
+                d.signature = dataUrl;
+                d.status = "Accepté";
+                d.signDate = new Date().toLocaleDateString('fr-FR');
+                
                 Store.save();
                 App.showToast("Devis signé et accepté !");
                 App.closeModal('modal-signature');
                 App.openHub(c.id);
             },
 
-            deleteDevis(did) { if(!confirm("Eliminare definitivamente questo preventivo?")) return; const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId); c.devisList = c.devisList.filter(d => d.id !== did); Store.save(); App.openHub(c.id); },
-            deleteCDC(docId) { if(!confirm("Eliminare questo documento CDC?")) return; const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId); c.extraDocs = c.extraDocs.filter(d => d.id != docId); Store.save(); App.openHub(c.id); },
+            // --- END SIGNATURE ---
+
+            deleteDevis(did) {
+                if(!confirm("Eliminare definitivamente questo preventivo?")) return;
+                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+                c.devisList = c.devisList.filter(d => d.id !== did);
+                Store.save();
+                App.openHub(c.id);
+            },
+
+            deleteCDC(docId) {
+                if(!confirm("Eliminare questo documento CDC?")) return;
+                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+                c.extraDocs = c.extraDocs.filter(d => d.id != docId);
+                Store.save();
+                App.openHub(c.id);
+            },
 
             deleteRoom() {
                 const roomName = document.getElementById('room-display-final').innerText;
                 if(roomName === "Sélectionner une pièce") return;
+
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId); 
                 const dv = c.devisList.find(x => x.id == Store.data.activeDevisId);
                 const isUsed = dv.items.some(i => i.piece === roomName);
-                if(isUsed) { alert("Impossibile eliminare: questa stanza contiene degli articoli. Rimuovi prima gli articoli."); return; }
+
+                if(isUsed) {
+                    alert("Impossibile eliminare: questa stanza contiene degli articoli. Rimuovi prima gli articoli.");
+                    return;
+                }
+
                 if(!confirm("Rimuovere la stanza '" + roomName + "' dalla lista rapida?")) return;
+
                 document.getElementById('input-room-name').value = '';
                 document.getElementById('input-room-details').value = '';
-                document.getElementById('room-dim-l').value = ''; document.getElementById('room-dim-w').value = ''; document.getElementById('room-dim-h').value = '';
-                document.getElementById('room-calc-sol').innerText = '0'; document.getElementById('room-calc-murs').innerText = '0';
+                document.getElementById('room-dim-l').value = '';
+                document.getElementById('room-dim-w').value = '';
+                document.getElementById('room-dim-h').value = '';
+                document.getElementById('room-calc-sol').innerText = '0';
+                document.getElementById('room-calc-murs').innerText = '0';
                 document.getElementById('room-select-standard').value = ''; 
                 document.getElementById('room-display-final').innerText = "Sélectionner une pièce";
                 document.getElementById('room-display-final').style.color = "var(--primary)";
@@ -1011,6 +1067,7 @@
                 document.getElementById('room-selector-widget').style.borderColor = "var(--border)";
                 document.getElementById('room-selector-widget').style.background = "#FFF";
                 document.getElementById('btn-delete-room').style.display = 'none'; 
+                
                 App.renderUsedRoomButtons();
             },
 
@@ -1048,7 +1105,7 @@
                 d.items.forEach(i => { 
                     totP += i.qty * i.price; 
                     totT += i.qty * (i.time || 0); 
-                    totG += i.qty * (i.gravats || 0);
+                    totG += i.qty * (i.gravats || 0); // CALCOLO GRAVATS
                 });
                 d.total = totP; d.totalTime = totT; d.totalGravats = totG; Store.save();
                 document.getElementById('ed-total-price').innerText = App.formatMoney(totP);
@@ -1088,8 +1145,10 @@
                     d.items.forEach(i => {
                         const key = i.desc + "_" + i.price;
                         if (!aggregated[key]) aggregated[key] = { desc: i.desc, price: i.price, totalQty: 0, totalTime: 0, pieces: new Set(), totalLaborCost: 0, totalMatCost: 0 };
-                        aggregated[key].totalQty += i.qty; aggregated[key].totalTime += (i.qty * (i.time || 0)); 
+                        aggregated[key].totalQty += i.qty; 
+                        aggregated[key].totalTime += (i.qty * (i.time || 0)); 
                         aggregated[key].pieces.add(i.piece || "Général");
+                        
                         aggregated[key].totalLaborCost += ((i.time || 0) * rate * i.qty);
                         aggregated[key].totalMatCost += ((i.material_cost || 0) * i.qty);
                     });
@@ -1105,48 +1164,67 @@
                 }
             },
 
+            // --- NUOVA LOGICA "ROOM SELECTOR" V7 (STICKY & SMART) ---
             openLibrary() {
-                // ★ ORDINAMENTO PERSONALIZZATO QUI
-                const categories = App.sortCategories(Object.keys(Config.LIB));
+                const categories = [...new Set(Config.allItems.map(i => i.category))]; // CAMBIO QUI: Ordine da ref_code
                 if(categories.length === 0) return App.showToast("Caricamento biblioteca...");
                 
+                // RESET VARIABILI
                 document.getElementById('lib-search').value = '';
-                App.state.libCategory = null; App.state.libSubCategory = null;
+                App.state.libCategory = null; 
+                App.state.libSubCategory = null;
                 document.getElementById('lib-breadcrumb').style.display = 'none';
                 
+                // RESET TENDINA FAMIGLIE
                 const sel = document.getElementById('lib-category-select');
                 sel.innerHTML = '<option value="">-- Tutte le Famiglie --</option>';
                 categories.forEach(cat => sel.innerHTML += `<option value="${cat}">${cat}</option>`);
                 sel.value = ""; 
 
+                // --- RESETTA SELETTORE STANZA ---
                 document.getElementById('input-room-name').value = '';
                 document.getElementById('input-room-details').value = '';
-                document.getElementById('room-dim-l').value = ''; document.getElementById('room-dim-w').value = ''; document.getElementById('room-dim-h').value = '';
-                document.getElementById('room-calc-sol').innerText = '0'; document.getElementById('room-calc-murs').innerText = '0';
+                document.getElementById('room-dim-l').value = '';
+                document.getElementById('room-dim-w').value = '';
+                document.getElementById('room-dim-h').value = '';
+                document.getElementById('room-calc-sol').innerText = '0';
+                document.getElementById('room-calc-murs').innerText = '0';
                 document.getElementById('room-select-standard').value = ''; 
                 document.getElementById('room-display-final').innerText = "Sélectionner une pièce";
                 document.getElementById('room-display-final').style.color = "var(--primary)";
                 document.getElementById('room-details-final').innerText = "";
                 document.getElementById('room-selector-widget').style.borderColor = "var(--border)";
                 document.getElementById('room-selector-widget').style.background = "#FFF";
-                document.getElementById('btn-delete-room').style.display = 'none'; 
+                document.getElementById('btn-delete-room').style.display = 'none'; // Nascondi cestino all'inizio
                 
+                // GENERA I BOTTONI SOLO PER STANZE GIÀ USATE
                 App.renderUsedRoomButtons();
+
+                // Mostra il selettore "compatto" all'inizio
                 App.toggleRoomEdit(false); 
+
                 App.renderLibraryItems();
                 document.getElementById('modal-library').classList.add('open'); 
             },
 
+            // FUNZIONE CHE CREA I BOTTONI DINAMICI (Con stile "Active")
             renderUsedRoomButtons(activeRoomName = null) {
                 const ch = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId); 
                 const dv = ch.devisList.find(x => x.id == Store.data.activeDevisId);
                 const container = document.getElementById('room-used-buttons');
                 container.innerHTML = '';
 
+                // Trova stanze uniche
                 const usedRooms = new Set();
-                dv.items.forEach(i => { if(i.piece) usedRooms.add(i.piece); });
+                dv.items.forEach(i => {
+                    if(i.piece) usedRooms.add(i.piece);
+                });
+
+                // Se abbiamo appena creato una stanza nuova che non ha ancora articoli, aggiungiamola alla lista
                 const currentInputName = document.getElementById('room-display-final').innerText;
-                if(currentInputName !== "Sélectionner une pièce") usedRooms.add(currentInputName);
+                if(currentInputName !== "Sélectionner une pièce") {
+                    usedRooms.add(currentInputName);
+                }
 
                 if(usedRooms.size === 0) {
                     container.innerHTML = '<span style="font-size:0.7rem; color:#94A3B8;">Aucune pièce créée. Cliquez sur +</span>';
@@ -1156,91 +1234,150 @@
                 usedRooms.forEach(roomName => {
                     const btn = document.createElement('div');
                     btn.className = 'room-tag-btn';
+                    
+                    // Stile attivo se corrisponde alla stanza corrente
                     if (roomName === activeRoomName || roomName === document.getElementById('room-display-final').innerText) {
                         btn.classList.add('active');
-                        if(document.getElementById('room-display-final').innerText !== roomName) App.setRoomActiveVisuals(roomName);
+                        // Aggiorna anche visivamente il box principale se non lo è già
+                        if(document.getElementById('room-display-final').innerText !== roomName) {
+                             App.setRoomActiveVisuals(roomName);
+                        }
                     }
+
                     btn.innerText = roomName;
-                    btn.onclick = () => { App.setRoomActiveVisuals(roomName); App.renderUsedRoomButtons(roomName); };
+                    btn.onclick = () => {
+                        App.setRoomActiveVisuals(roomName);
+                        // Ridisegna i bottoni per aggiornare lo stato "active"
+                        App.renderUsedRoomButtons(roomName);
+                    };
                     container.appendChild(btn);
                 });
             },
 
+            // Helper per impostare visivamente la stanza attiva
             setRoomActiveVisuals(roomName) {
                 document.getElementById('room-display-final').innerText = roomName;
                 document.getElementById('room-display-final').style.color = "var(--success)";
                 document.getElementById('room-details-final').innerText = ""; 
                 document.getElementById('room-selector-widget').style.borderColor = "var(--success)";
                 document.getElementById('room-selector-widget').style.background = "#F0FDF4";
+                
+                // Mostra il cestino se una stanza è selezionata
                 document.getElementById('btn-delete-room').style.display = 'flex';
+
+                // Per compatibilità col form edit
                 const parts = roomName.split(' (');
                 document.getElementById('input-room-name').value = parts[0];
             },
 
+            // Gestione Widget Stanza
             toggleRoomEdit(show) {
                 const view = document.getElementById('room-view-mode');
                 const edit = document.getElementById('room-edit-mode');
-                view.style.display = show ? 'none' : 'block';
-                edit.style.display = show ? 'block' : 'none';
+                if(show) {
+                    view.style.display = 'none';
+                    edit.style.display = 'block';
+                } else {
+                    view.style.display = 'block';
+                    edit.style.display = 'none';
+                }
             },
 
             onRoomSelectChange() {
                 const val = document.getElementById('room-select-standard').value;
                 const inputCustom = document.getElementById('input-room-name');
-                if(val === 'Autre') { inputCustom.style.display = 'block'; inputCustom.value = ''; inputCustom.focus(); }
-                else { inputCustom.style.display = 'none'; inputCustom.value = val; }
+                if(val === 'Autre') {
+                    inputCustom.style.display = 'block';
+                    inputCustom.value = '';
+                    inputCustom.focus();
+                } else {
+                    inputCustom.style.display = 'none';
+                    inputCustom.value = val;
+                }
             },
 
             calcRoomArea() {
                 const l = parseFloat(document.getElementById('room-dim-l').value) || 0;
                 const w = parseFloat(document.getElementById('room-dim-w').value) || 0;
                 const h = parseFloat(document.getElementById('room-dim-h').value) || 0;
-                let areaSol = 0, areaMurs = 0;
+                
+                let areaSol = 0;
+                let areaMurs = 0;
+
                 if(l > 0 && w > 0) {
                     areaSol = l * w;
-                    if(h > 0) areaMurs = (l + w) * 2 * h;
+                    if(h > 0) {
+                        const perimetro = (l + w) * 2;
+                        areaMurs = perimetro * h;
+                    }
                 }
+
                 document.getElementById('room-calc-sol').innerText = areaSol > 0 ? areaSol.toFixed(2) : "0";
                 document.getElementById('room-calc-murs').innerText = areaMurs > 0 ? areaMurs.toFixed(2) : "0";
             },
 
             confirmRoom() {
+                // Recupera nome (o da select o da input custom)
                 let name = document.getElementById('input-room-name').value.trim();
                 const selectVal = document.getElementById('room-select-standard').value;
+                
                 if(!selectVal && !name) return alert("Seleziona una stanza dal menu!");
                 if(selectVal && selectVal !== 'Autre') name = selectVal;
+
                 const details = document.getElementById('input-room-details').value.trim();
+                
+                // Leggi valori calcolati
                 const sol = parseFloat(document.getElementById('room-calc-sol').innerText);
                 const murs = parseFloat(document.getElementById('room-calc-murs').innerText);
+                
                 if(!name) return alert("Inserisci il nome della stanza!");
+
                 let displayName = name;
-                if (sol > 0 && murs > 0) displayName += ` (S: ${sol}m² | M: ${murs}m²)`;
-                else if (sol > 0) displayName += ` (S: ${sol}m²)`;
-                else if (details) displayName += ` (${details})`;
+                
+                // Logica Etichetta Intelligente
+                if (sol > 0 && murs > 0) {
+                    displayName += ` (S: ${sol}m² | M: ${murs}m²)`;
+                } else if (sol > 0) {
+                    displayName += ` (S: ${sol}m²)`;
+                } else if (details) {
+                    displayName += ` (${details})`;
+                }
+
+                // Imposta visualmente
                 App.setRoomActiveVisuals(displayName);
+                
+                // Aggiunge subito il bottone in alto
                 App.renderUsedRoomButtons(displayName);
+
                 App.toggleRoomEdit(false);
             },
 
+            // --- NAVIGAZIONE 3 LIVELLI ---
             renderLibraryItems() {
-                const cont = document.getElementById('lib-container'); cont.innerHTML = '';
+                const cont = document.getElementById('lib-container'); 
+                cont.innerHTML = '';
+                
                 const searchTerm = document.getElementById('lib-search').value;
                 const selectedCat = document.getElementById('lib-category-select').value;
                 const breadcrumb = document.getElementById('lib-breadcrumb');
                 
+                // 1. RICERCA ATTIVA
                 if (searchTerm.length > 1) {
                     breadcrumb.style.display = 'none';
                     const results = Config.searchIndex.search(searchTerm);
-                    if(results.length === 0) { cont.innerHTML = `<div style="text-align:center; padding:30px; color:#94A3B8;">Nessun risultato per "${searchTerm}"</div>`; return; }
+                    if(results.length === 0) {
+                        cont.innerHTML = `<div style="text-align:center; padding:30px; color:#94A3B8;">Nessun risultato per "${searchTerm}"</div>`;
+                        return;
+                    }
                     const finalResults = selectedCat ? results.filter(r => r.item.category === selectedCat) : results;
                     App.renderLibItemsList(cont, finalResults.map(r => r.item));
                     return;
                 }
 
-                // ★ LIVELLO RADICE (Famiglie) con ordinamento
+                // 2. LIVELLO RADICE (Famiglie)
                 if (App.state.libCategory === null && !selectedCat) {
                     breadcrumb.style.display = 'none';
-                    const categories = App.sortCategories(Object.keys(Config.LIB));
+                    const categories = [...new Set(Config.allItems.map(i => i.category))]; // CAMBIO QUI: Ordine da ref_code
                     let grid = document.createElement('div');
                     grid.style.cssText = "display:grid; grid-template-columns: 1fr 1fr; gap:12px; padding-top:10px;";
                     categories.forEach(cat => {
@@ -1255,6 +1392,7 @@
                     return;
                 }
 
+                // 3. LIVELLO INTERMEDIO (Sotto-Famiglie)
                 const activeCat = selectedCat || App.state.libCategory;
                 if (activeCat && App.state.libSubCategory === null) {
                     breadcrumb.style.display = 'block';
@@ -1266,7 +1404,7 @@
                     backBtn.onclick = () => { App.state.libCategory = null; document.getElementById('lib-category-select').value = ""; App.renderLibraryItems(); };
                     cont.appendChild(backBtn);
                     const allItemsInCat = Config.LIB[activeCat];
-                    const subCats = [...new Set(allItemsInCat.map(i => i.sub_category))].sort();
+                    const subCats = [...new Set(allItemsInCat.map(i => i.sub_category))]; // CAMBIO QUI: Ordine da ref_code
                     let grid = document.createElement('div');
                     grid.style.cssText = "display:grid; grid-template-columns: 1fr 1fr; gap:12px;";
                     subCats.forEach(sub => {
@@ -1280,6 +1418,7 @@
                     return;
                 }
 
+                // 4. LIVELLO FINALE (Articoli)
                 if (activeCat && App.state.libSubCategory) {
                     breadcrumb.style.display = 'block';
                     document.getElementById('lib-bc-cat').innerText = activeCat;
@@ -1298,6 +1437,7 @@
                 items.forEach(it => { 
                     const dynamicPrice = App.calculateItemPrice(it);
                     let div = document.createElement('div'); div.className = 'card-item'; div.style.marginBottom = "8px"; 
+                    
                     div.innerHTML = `
                         <div class="card-info">
                             <div class="card-title" style="font-size:0.95rem;">${it.desc}</div>
@@ -1312,11 +1452,20 @@
                             <i class="fas fa-plus" style="font-size:0.9rem;"></i>
                         </div>
                     `; 
+                    
                     div.onclick = () => { 
+                        // CONTROLLO STANZA
                         const roomDisplay = document.getElementById('room-display-final');
                         const isConfirmed = document.getElementById('room-selector-widget').style.borderColor === "var(--success)";
-                        if(!isConfirmed) { App.toggleRoomEdit(true); return alert("Per favore, seleziona e CONFERMA una stanza prima di aggiungere articoli!"); }
+                        
+                        if(!isConfirmed) {
+                            App.toggleRoomEdit(true);
+                            return alert("Per favore, seleziona e CONFERMA una stanza prima di aggiungere articoli!");
+                        }
+
                         const finalPieceName = roomDisplay.innerText;
+                        
+                        // APRE IL MODALE DI INSERIMENTO (Invece di salvare subito)
                         App.openAddItemModal(it, finalPieceName);
                     }; 
                     container.appendChild(div); 
@@ -1326,21 +1475,31 @@
             openAddItemModal(item, room) {
                 App.state.isEditing = false;
                 App.state.tempLibItem = item;
+                
                 document.getElementById('edit-item-title').innerText = "Nouvel Article";
                 document.getElementById('edit-item-desc').value = item.desc;
                 document.getElementById('edit-item-qty').value = 1;
                 document.getElementById('edit-item-unit').value = item.unit;
                 document.getElementById('edit-item-price').value = App.calculateItemPrice(item).toFixed(2);
+                
+                // SET FIELDS FOR CALCULATION
                 document.getElementById('edit-item-time').value = item.labor_time || 0;
                 document.getElementById('edit-item-mat').value = item.material_cost || 0;
+                
                 document.getElementById('edit-item-rubble').value = item.gravats || 0; 
                 document.getElementById('btn-delete-item').style.display = 'none'; 
+
+                // Gestione Select Stanza
                 const sel = document.getElementById('edit-item-piece');
                 sel.innerHTML = '';
+                // Aggiunge la stanza selezionata se non c'è
                 let o = document.createElement('option');
                 o.value = room; o.text = room; o.selected = true;
                 sel.appendChild(o);
+                
                 document.getElementById('modal-edit-item').classList.add('open');
+                
+                // Trigger calc initial
                 App.calcEditPrice();
             },
 
@@ -1348,31 +1507,49 @@
                 App.state.isEditing = true;
                 document.getElementById('edit-item-title').innerText = "Modifier Article";
                 document.getElementById('btn-delete-item').style.display = 'block';
+
                 const c=Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId); const d=c.devisList.find(x=>x.id==Store.data.activeDevisId); const item=d.items.find(x=>x.id==id);
                 document.getElementById('edit-item-idx').value = id; document.getElementById('edit-item-desc').value = item.desc; document.getElementById('edit-item-qty').value = item.qty; 
                 document.getElementById('edit-item-price').value = item.price.toFixed(2); 
                 document.getElementById('edit-item-unit').value = item.unit || 'U'; 
+                
                 document.getElementById('edit-item-time').value = item.time || 0;
-                document.getElementById('edit-item-mat').value = item.material_cost || 0;
+                document.getElementById('edit-item-mat').value = item.material_cost || 0; // LOAD MAT COST
+                
                 document.getElementById('edit-item-rubble').value = item.gravats || 0;
+                
                 const rooms = new Set(d.items.map(i => i.piece).filter(Boolean)); 
+                // Aggiungi la stanza sticky corrente alla lista
                 const currentSticky = document.getElementById('room-display-final').innerText;
                 if(currentSticky !== "Sélectionner une pièce") rooms.add(currentSticky);
+
                 const sel = document.getElementById('edit-item-piece'); sel.innerHTML = ''; 
                 rooms.forEach(r => { const isSel = r === item.piece ? 'selected' : ''; sel.innerHTML += `<option value="${r}" ${isSel}>${r}</option>`; });
                 document.getElementById('modal-edit-item').classList.add('open');
+                
+                // Trigger calc initial
                 App.calcEditPrice();
             },
 
+            // CALCULATION LOGIC IN MODAL
             calcEditPrice() {
                 const qty = parseFloat(document.getElementById('edit-item-qty').value) || 0;
                 const t = parseFloat(document.getElementById('edit-item-time').value) || 0;
                 const m = parseFloat(document.getElementById('edit-item-mat').value) || 0;
                 const rate = Store.data.settings.hourlyRate || 45;
+                
+                // COST BREAKDOWN
                 const laborCost = t * rate;
-                document.getElementById('edit-item-split-display').innerText = `Manodopera: ${App.formatMoney(laborCost)} + Materiale: ${App.formatMoney(m)}`;
+                
+                // UPDATE BREAKDOWN DISPLAY
+                document.getElementById('edit-item-split-display').innerText = 
+                    `Manodopera: ${App.formatMoney(laborCost)} + Materiale: ${App.formatMoney(m)}`;
+
+                // UNIT PRICE FORMULA: (Time * Rate) + Material
                 const unitPrice = laborCost + m;
                 document.getElementById('edit-item-price').value = unitPrice.toFixed(2);
+                
+                // TOTAL ROW CALCULATION
                 const totalRow = unitPrice * qty;
                 document.getElementById('edit-item-total-row').innerText = App.formatMoney(totalRow);
             },
@@ -1381,31 +1558,47 @@
                 const desc = document.getElementById('edit-item-desc').value;
                 const qty = parseFloat(document.getElementById('edit-item-qty').value)||0;
                 const price = parseFloat(document.getElementById('edit-item-price').value)||0;
+                
                 const time = parseFloat(document.getElementById('edit-item-time').value)||0;
                 const material = parseFloat(document.getElementById('edit-item-mat').value)||0;
+                
                 const gravats = parseFloat(document.getElementById('edit-item-rubble').value)||0;
                 const piece = document.getElementById('edit-item-piece').value;
+                
                 const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId); 
                 const d = c.devisList.find(x=>x.id==Store.data.activeDevisId); 
 
                 if (App.state.isEditing) {
+                    // MODIFICA ESISTENTE
                     const id = parseInt(document.getElementById('edit-item-idx').value); 
                     const item = d.items.find(x=>x.id==id); 
                     item.desc = desc; item.qty = qty; item.price = price; 
-                    item.time = time; item.material_cost = material; 
+                    item.time = time; item.material_cost = material; // SAVE MAT
                     item.piece = piece; item.gravats = gravats;
                 } else {
+                    // NUOVO INSERIMENTO
                     const newItem = { 
-                        id: Date.now(), desc: desc, 
+                        id: Date.now(), 
+                        desc: desc, 
                         unit: document.getElementById('edit-item-unit').value, 
-                        time: time, material_cost: material, 
-                        price: price, qty: qty, piece: piece, gravats: gravats
+                        time: time, 
+                        material_cost: material, // SAVE MAT
+                        price: price, 
+                        qty: qty, 
+                        piece: piece,
+                        gravats: gravats
                     };
                     d.items.push(newItem);
                     App.showToast("Ajouté: " + desc);
+                    
+                    // Se stiamo usando lo sticky widget, aggiorniamo i bottoni
                     App.renderUsedRoomButtons(piece);
                 }
-                Store.save(); App.closeModal('modal-edit-item'); App.calcTotals(); App.renderEditorItems(); 
+
+                Store.save(); 
+                App.closeModal('modal-edit-item'); 
+                App.calcTotals(); 
+                App.renderEditorItems(); 
             },
 
             deleteItem() { if(confirm("Supprimer ?")) { const id=parseInt(document.getElementById('edit-item-idx').value); const c=Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId); const d=c.devisList.find(x=>x.id==Store.data.activeDevisId); d.items=d.items.filter(x=>x.id!==id); Store.save(); App.closeModal('modal-edit-item'); App.calcTotals(); App.renderEditorItems(); } },
@@ -1432,19 +1625,34 @@
             saveAgendaEvent() { const cid=document.getElementById('agd-chantier').value; const date=document.getElementById('agd-date').value; if(cid&&date){const c=Store.data.chantiers.find(x=>x.id==cid); Store.data.appointments.push({id:Date.now(), date:date, title:"Visite", sub:c.name}); Store.save(); App.showToast("RDV Enregistré"); App.closeModal('modal-agenda'); App.renderHome();} },
             renderDocuments(filter) { const l=document.getElementById('documents-list'); l.innerHTML=''; let docs=[]; Store.data.chantiers.forEach(c=>{ const cli=Store.data.clients.find(x=>x.id==c.clientId); const cn=cli?cli.nom:'-'; if(c.devisList) c.devisList.forEach(d=>docs.push({type:'Devis', ref:d.ref, client:cn, cid:c.id, obj:d})); if(c.factures) c.factures.forEach(f=>docs.push({type:'Facture', ref:f.ref, client:cn, cid:c.id, obj:f})); if(c.extraDocs) c.extraDocs.forEach(e=>docs.push({type:'CDC', ref:e.ref, client:cn, cid:c.id, obj:e})); }); if(filter&&filter!=='all') docs=docs.filter(d=>d.type===filter||(filter==='CDC'&&d.type==='Etude')); docs.forEach(d=>{ let div=document.createElement('div'); div.className='card-item'; div.innerHTML=`<div class="card-info"><span class="card-tag">${d.type}</span><div class="card-title">${d.ref}</div><div class="card-sub">${d.client}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); ${d.type==='CDC' ? `App.generateCDCPDF('${d.obj.id}')` : `App.generateGlobalPDF('${d.type.toLowerCase()}', ${d.obj.id})`}"></i>`; div.onclick=()=>{ Store.data.activeChantierId=d.cid; if(d.type==='Devis') App.openEditor(d.obj.id); else if(d.type==='CDC') App.viewCahierTable(d.obj); else App.openHub(d.cid); }; l.appendChild(div); }); },
             
+            // AJOUT CDC PHOTOS : Modification de viewCahierTable pour afficher les photos et bouton d'ajout
             viewCahierTable(doc) {
                 document.getElementById('vc-title').innerText = doc.name;
                 const t = document.getElementById('vc-table');
                 t.innerHTML = '<tr style="background:#f1f5f9; text-align:left;"><th style="padding:10px;">Article</th><th style="padding:10px;">Loc</th><th style="padding:10px;">Photos</th><th style="padding:10px;">Ass.</th></tr>';
+                
                 doc.items.forEach(i => {
                     const photosHtml = (i.photos && i.photos.length) 
                         ? i.photos.map(p => `<img src="${p}" class="photo-thumb" onclick="window.open('${p}', '_blank')">`).join('')
                         : 'Aucune photo';
-                    const row = t.insertRow(); row.style.borderBottom = '1px solid #eee';
-                    const cellDesc = row.insertCell(); cellDesc.style.padding = '10px'; cellDesc.innerText = i.desc;
-                    const cellLoc = row.insertCell(); cellLoc.style.padding = '10px'; cellLoc.innerText = i.piece || '-';
-                    const cellPhotos = row.insertCell(); cellPhotos.style.padding = '10px'; cellPhotos.innerHTML = `<div class="photo-gallery">${photosHtml}</div>`;
-                    const cellActions = row.insertCell(); cellActions.style.padding = '10px';
+                    
+                    const row = t.insertRow();
+                    row.style.borderBottom = '1px solid #eee';
+                    
+                    const cellDesc = row.insertCell();
+                    cellDesc.style.padding = '10px';
+                    cellDesc.innerText = i.desc;
+                    
+                    const cellLoc = row.insertCell();
+                    cellLoc.style.padding = '10px';
+                    cellLoc.innerText = i.piece || '-';
+                    
+                    const cellPhotos = row.insertCell();
+                    cellPhotos.style.padding = '10px';
+                    cellPhotos.innerHTML = `<div class="photo-gallery">${photosHtml}</div>`;
+                    
+                    const cellActions = row.insertCell();
+                    cellActions.style.padding = '10px';
                     cellActions.innerHTML = `
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <span style="color: #15803d; font-weight:bold;">${i.assignedTo || '-'}</span>
@@ -1454,64 +1662,100 @@
                         </div>
                     `;
                 });
+                
                 document.getElementById('modal-view-cahier').classList.add('open');
             },
 
+            // AJOUT CDC PHOTOS : Ouvrir le modal d'ajout de photo pour un item spécifique
             openAddPhotoModal(docId, itemId, itemDesc) {
-                App.state.currentCDCDocForPhoto = docId; App.state.currentCDCItemForPhoto = itemId;
+                App.state.currentCDCDocForPhoto = docId;
+                App.state.currentCDCItemForPhoto = itemId;
                 document.getElementById('add-photo-item-desc').innerText = `Ajouter une photo pour : ${itemDesc}`;
-                document.getElementById('photo-input').value = ''; document.getElementById('photo-preview').innerHTML = '';
+                document.getElementById('photo-input').value = ''; // Reset input
+                document.getElementById('photo-preview').innerHTML = '';
                 document.getElementById('modal-add-photo').classList.add('open');
+                
+                // Prévisualisation si fichier sélectionné
                 document.getElementById('photo-input').onchange = function() {
                     const file = this.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = function(e) { document.getElementById('photo-preview').innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`; };
+                        reader.onload = function(e) {
+                            document.getElementById('photo-preview').innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
+                        };
                         reader.readAsDataURL(file);
                     }
                 };
             },
 
+            // AJOUT CDC PHOTOS : Upload de la photo vers Supabase Storage
             async uploadPhoto() {
                 const fileInput = document.getElementById('photo-input');
                 const file = fileInput.files[0];
                 if (!file) return alert("Sélectionnez une photo.");
+
                 const docId = App.state.currentCDCDocForPhoto;
                 const itemId = App.state.currentCDCItemForPhoto;
                 if (!docId || !itemId) return;
+
                 const userId = Auth.user.id;
                 const fileName = `${userId}/${docId}/${itemId}/${Date.now()}_${file.name}`;
+
                 App.showToast("Upload en cours...");
-                const { data, error } = await sbClient.storage.from('cdc-photos').upload(fileName, file);
-                if (error) { console.error(error); return App.showToast("Erreur upload : " + error.message); }
-                const { data: urlData, error: urlError } = await sbClient.storage.from('cdc-photos').createSignedUrl(fileName, 31536000);
-                if (urlError) { console.error(urlError); return App.showToast("Erreur génération URL"); }
+
+                const { data, error } = await sbClient.storage
+                    .from('cdc-photos')
+                    .upload(fileName, file);
+
+                if (error) {
+                    console.error(error);
+                    return App.showToast("Erreur upload : " + error.message);
+                }
+
+                // Récupérer l'URL publique (le bucket est privé, on génère une URL signée)
+                const { data: urlData, error: urlError } = await sbClient.storage
+                    .from('cdc-photos')
+                    .createSignedUrl(fileName, 31536000); // 1 an
+
+                if (urlError) {
+                    console.error(urlError);
+                    return App.showToast("Erreur génération URL");
+                }
+
                 const publicUrl = urlData.signedUrl;
+
+                // Mettre à jour l'item dans le CDC
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 const doc = c.extraDocs.find(d => d.id == docId);
                 const item = doc.items.find(i => i.id == itemId);
                 if (!item.photos) item.photos = [];
                 item.photos.push(publicUrl);
+
                 await Store.save();
                 App.showToast("Photo ajoutée !");
                 App.closeModal('modal-add-photo');
-                App.viewCahierTable(doc);
+                App.viewCahierTable(doc); // Rafraîchir la vue
             },
 
             renderGlobalInvoices() { const l = document.getElementById('global-invoice-list'); l.innerHTML = ''; Store.data.chantiers.forEach(c => { if(c.factures) c.factures.forEach(f => { if(!f.paid) { const cli = Store.data.clients.find(x=>x.id==c.clientId); let div = document.createElement('div'); div.className = 'card-item'; div.innerHTML = `<div class="card-info"><div class="card-title">${cli?cli.nom:'?'}</div><div class="card-sub">Ref: ${f.ref}</div></div><i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('facture', ${f.id})"></i><div style="font-weight:800; color:var(--danger)">${App.formatMoney(f.amount)}</div>`; div.onclick = () => App.openHub(c.id); l.appendChild(div); } }); }); },
 
+            // --- NOUVELLE FONCTION : RAPPORT PAR PIÈCES (PDF) ---
             generateRoomReportPDF() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 const did = Store.data.activeDevisId;
                 if(!did) return alert("Veuillez ouvrir un devis d'abord.");
+                
                 const d = c.devisList.find(x => x.id == did);
                 const cli = Store.data.clients.find(x => x.id == c.clientId);
+
+                // Groupement des items par pièce
                 const rooms = {};
                 d.items.forEach(item => {
                     const p = item.piece || "Non assigné";
                     if (!rooms[p]) rooms[p] = [];
                     rooms[p].push(item);
                 });
+
                 let roomsHtml = "";
                 for (const [roomName, items] of Object.entries(rooms)) {
                     let itemsRows = items.map(i => `
@@ -1523,27 +1767,62 @@
                             </td>
                         </tr>
                     `).join('');
+
                     roomsHtml += `
                         <div style="margin-bottom: 25px; break-inside: avoid;">
-                            <div style="background: #0F172A; color: white; padding: 8px 15px; border-radius: 6px; font-weight: 800; text-transform: uppercase; font-size: 0.9rem;">📍 ${roomName}</div>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">${itemsRows}</table>
+                            <div style="background: #0F172A; color: white; padding: 8px 15px; border-radius: 6px; font-weight: 800; text-transform: uppercase; font-size: 0.9rem;">
+                                📍 ${roomName}
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                                ${itemsRows}
+                            </table>
                         </div>
                     `;
                 }
+
+                // Add Gravats Summary to CDC
                 let gravatsInfo = "";
-                if(d.totalGravats > 0) gravatsInfo = `<div style="background:#FEE2E2; color:#B91C1C; padding:15px; border-radius:8px; margin-bottom:20px; font-weight:bold; border:1px solid #FECACA;"><i class="fas fa-truck-loading"></i> Volume Total Gravats Estimé : ${d.totalGravats.toFixed(2)} m³</div>`;
+                if(d.totalGravats > 0) {
+                    gravatsInfo = `<div style="background:#FEE2E2; color:#B91C1C; padding:15px; border-radius:8px; margin-bottom:20px; font-weight:bold; border:1px solid #FECACA;">
+                        <i class="fas fa-truck-loading"></i> Volume Total Gravats Estimé : ${d.totalGravats.toFixed(2)} m³
+                    </div>`;
+                }
+
                 const html = `
                     <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 30px; color: #1E293B;">
                         <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #0F172A; padding-bottom: 20px; margin-bottom: 30px;">
-                            <div><h1 style="margin: 0; font-size: 1.5rem;">ORDRE D'EXÉCUTION</h1><div style="color: #64748B;">Projet : <strong>${c.name}</strong></div></div>
-                            <div style="text-align: right; font-size: 0.85rem;">Date : ${new Date().toLocaleDateString('fr-FR')}<br>Réf : ${d.ref}</div>
+                            <div>
+                                <h1 style="margin: 0; font-size: 1.5rem;">ORDRE D'EXÉCUTION</h1>
+                                <div style="color: #64748B;">Projet : <strong>${c.name}</strong></div>
+                            </div>
+                            <div style="text-align: right; font-size: 0.85rem;">
+                                Date : ${new Date().toLocaleDateString('fr-FR')}<br>
+                                Réf : ${d.ref}
+                            </div>
                         </div>
-                        <div style="margin-bottom: 30px; font-size: 0.9rem;"><strong>Client :</strong> ${cli ? cli.nom : 'Non spécifié'}<br><strong>Adresse :</strong> ${c.addr || 'Voir fiche projet'}</div>
+
+                        <div style="margin-bottom: 30px; font-size: 0.9rem;">
+                            <strong>Client :</strong> ${cli ? cli.nom : 'Non spécifié'}<br>
+                            <strong>Adresse :</strong> ${c.addr || 'Voir fiche projet'}
+                        </div>
+
                         ${gravatsInfo}
+
                         ${roomsHtml}
-                        <div style="margin-top: 50px; border-top: 1px solid #CBD5E1; padding-top: 20px; font-size: 0.75rem; color: #94A3B8; text-align: center;">Généré via QOTIA CLOUD V7</div>
-                    </div>`;
-                const opt = { margin: 10, filename: `RAPPORT_ZONES_${c.name.replace(/\s+/g, '_')}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+
+                        <div style="margin-top: 50px; border-top: 1px solid #CBD5E1; padding-top: 20px; font-size: 0.75rem; color: #94A3B8; text-align: center;">
+                            Généré via QOTIA CLOUD V7 - Document interne destiné aux équipes de chantier.
+                        </div>
+                    </div>
+                `;
+
+                const opt = {
+                    margin: 10,
+                    filename: `RAPPORT_ZONES_${c.name.replace(/\s+/g, '_')}.pdf`,
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
                 html2pdf().set(opt).from(html).save();
                 App.showToast("Rapport par pièces généré !");
             },
@@ -1552,26 +1831,93 @@
                 const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId);
                 const cli = Store.data.clients.find(x=>x.id==c.clientId);
                 const rate = Store.data.settings.hourlyRate || 45;
-                let items, title, ref, extraInfo = "", signatureBlock = "";
+                let items, title, ref, extraInfo = "";
+                let signatureBlock = "";
+                
                 if (type === 'devis') {
                     const obj = c.devisList.find(x=>x.id==id);
                     items = obj.items; title = "DEVIS"; ref = obj.ref;
-                    if(obj.totalGravats > 0) extraInfo = `<div style="text-align:right; margin-top:10px; font-size:0.9rem; color:#64748B;">Volume Gravats Estimé: <strong>${obj.totalGravats.toFixed(2)} m³</strong></div>`;
-                    if(obj.signature) signatureBlock = `<div style="margin-top:40px; margin-bottom:20px; border:2px solid #16a34a; padding:15px; border-radius:10px;"><div style="font-weight:bold; color:#16a34a;">BON POUR ACCORD</div><div style="font-size:0.8rem;">Signé le ${obj.signDate||''}</div><img src="${obj.signature}" style="max-width:250px; max-height:100px;"/></div>`;
-                    else signatureBlock = `<div style="margin-top:50px; display:flex; justify-content:space-between;"><div style="border-top:1px solid #000; width:40%; padding-top:10px; font-size:0.8rem;">Signature Entreprise</div><div style="border-top:1px solid #000; width:40%; padding-top:10px; font-size:0.8rem;">Signature Client</div></div>`;
+                    if(obj.totalGravats > 0) {
+                        extraInfo = `<div style="text-align:right; margin-top:10px; font-size:0.9rem; color:#64748B;">Volume Gravats Estimé: <strong>${obj.totalGravats.toFixed(2)} m³</strong></div>`;
+                    }
+                    // SIGNATURE BLOCK
+                    if(obj.signature) {
+                        signatureBlock = `
+                            <div style="margin-top:40px; margin-bottom:20px; border:2px solid #16a34a; padding:15px; border-radius:10px; page-break-inside: avoid; break-inside: avoid;">
+                                <div style="font-weight:bold; color:#16a34a; margin-bottom:10px;">BON POUR ACCORD</div>
+                                <div style="font-size:0.8rem; margin-bottom:10px;">Signé électroniquement le ${obj.signDate || ''}</div>
+                                <img src="${obj.signature}" style="max-width: 250px; max-height: 100px; width: auto; height: auto; display:block;" />
+                            </div>
+                        `;
+                    } else {
+                        signatureBlock = `
+                            <div style="margin-top:50px; margin-bottom:20px; display:flex; justify-content:space-between; page-break-inside: avoid; break-inside: avoid;">
+                                <div style="border-top:1px solid #000; width:40%; padding-top:10px; font-size:0.8rem;">Date et Signature Entreprise</div>
+                                <div style="border-top:1px solid #000; width:40%; padding-top:10px; font-size:0.8rem;">Date et Signature Client (Bon pour accord)</div>
+                            </div>
+                        `;
+                    }
+
                 } else {
                     const obj = c.factures.find(x=>x.id==id);
-                    title = "FACTURE"; ref = obj.ref; items = [{desc: `Facture ${obj.type}`, qty:1, unit:'U', price:obj.amount, time:0, material_cost:0}];
+                    title = "FACTURE"; ref = obj.ref; items = [{desc: `Facture selon avancement (${obj.type})`, qty: 1, unit:'U', price: obj.amount, time:0, material_cost:0}];
                 }
+                
                 let totalTTC = 0;
                 let rows = items.map(i => {
                     const rowT = i.qty * i.price; totalTTC += rowT;
+                    
+                    // Calc single costs
                     const costLabor = (i.time || 0) * rate;
                     const costMat = (i.material_cost || 0);
-                    return `<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;">${i.desc}</td><td style="padding:10px; text-align:center;">${i.qty}</td><td style="padding:10px; text-align:center;">${costLabor>0?App.formatMoney(costLabor):'-'}</td><td style="padding:10px; text-align:center;">${costMat>0?App.formatMoney(costMat):'-'}</td><td style="padding:10px; text-align:right;">${App.formatMoney(i.price)}</td><td style="padding:10px; text-align:right; font-weight:bold;">${App.formatMoney(rowT)}</td></tr>`;
+
+                    return `
+                        <tr style="border-bottom:1px solid #eee;">
+                            <td style="padding:10px;">${i.desc}</td>
+                            <td style="padding:10px; text-align:center;">${i.qty}</td>
+                            <td style="padding:10px; text-align:center; font-size:0.85rem; color:#64748b;">${costLabor > 0 ? App.formatMoney(costLabor) : '-'}</td>
+                            <td style="padding:10px; text-align:center; font-size:0.85rem; color:#64748b;">${costMat > 0 ? App.formatMoney(costMat) : '-'}</td>
+                            <td style="padding:10px; text-align:right;">${App.formatMoney(i.price)}</td>
+                            <td style="padding:10px; text-align:right; font-weight:bold;">${App.formatMoney(rowT)}</td>
+                        </tr>`;
                 }).join('');
-                const html = `<div style="font-family:sans-serif; padding:30px;"><div style="display:flex; justify-content:space-between;"><div><h1>${title}</h1><div>${ref}</div></div><div>QOTIA ENTREPRISE<br>123 Rue Exemple<br>06000 NICE</div></div><div style="background:#f1f5f9; padding:20px; border-radius:10px; margin-bottom:30px;"><strong>CLIENT:</strong><br><span style="font-size:1.2rem; font-weight:bold;">${cli.nom}</span><br>${cli.addr}<br>${cli.tel||''}</div><table style="width:100%; border-collapse:collapse; margin-bottom:30px;"><thead style="background:#0f172a; color:white;"><tr><th>Description</th><th>Qté</th><th>M.O.</th><th>Mat.</th><th>P.U.</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table><div style="text-align:right;"><div style="font-size:1.5rem; font-weight:900;">TOTAL: ${App.formatMoney(totalTTC)}</div>${extraInfo}</div>${signatureBlock}</div>`;
-                const opt = { margin: 10, filename: `${title}_${ref}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+                
+                const html = `
+                    <div style="font-family:sans-serif; padding:30px; color:#334155;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px;">
+                            <div>
+                                <h1 style="color:#0f172a; margin:0;">${title}</h1>
+                                <div style="color:#64748b; font-size:0.9rem;">${ref}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <strong>QOTIA ENTREPRISE</strong><br>123 Rue Exemple<br>06000 NICE
+                            </div>
+                        </div>
+                        <div style="background:#f1f5f9; padding:20px; border-radius:10px; margin-bottom:30px;">
+                            <strong>CLIENT:</strong><br>
+                            <span style="font-size:1.2rem; font-weight:bold; color:#0f172a;">${cli.nom}</span><br>
+                            ${cli.addr}<br>${cli.tel||''}
+                        </div>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.9rem; margin-bottom:30px;">
+                            <thead style="background:#0f172a; color:white;">
+                                <tr>
+                                    <th style="padding:12px; text-align:left;">Description</th>
+                                    <th style="padding:12px; text-align:center;">Qté</th>
+                                    <th style="padding:12px; text-align:center;">M.O. (U)</th>
+                                    <th style="padding:12px; text-align:center;">Mat. (U)</th>
+                                    <th style="padding:12px; text-align:right;">P.U.</th>
+                                    <th style="padding:12px; text-align:right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                        <div style="text-align:right; margin-bottom:20px;">
+                            <div style="font-size:1.5rem; font-weight:900; color:#0f172a;">TOTAL A PAYER: ${App.formatMoney(totalTTC)}</div>
+                            ${extraInfo}
+                        </div>
+                        ${signatureBlock}
+                        <div style="height:30px;"></div> </div>`;
+                const opt = { margin: 10, filename: `${title}_${ref}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
                 html2pdf().set(opt).from(html).save();
                 App.showToast("PDF Téléchargé");
             },
@@ -1580,21 +1926,59 @@
                 const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId);
                 const doc = c.extraDocs.find(x => x.id == docId);
                 if (!doc) return;
+
+                const items = doc.items;
+                
+                // Calculate Gravats for this specific CDC
                 let cdcGravats = 0;
-                let rows = doc.items.map(i => { cdcGravats += i.qty * (i.gravats||0); return `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${i.desc}</td><td style="padding:10px; border-bottom:1px solid #eee;">${i.piece||'-'}</td><td style="padding:10px; border-bottom:1px solid #eee;">${i.qty} ${i.unit}</td></tr>`; }).join('');
-                let gravatsInfo = cdcGravats>0?`<div style="margin-top:20px; padding:10px; background:#f1f5f9; border-radius:5px;"><strong>Volume Gravats:</strong> ${cdcGravats.toFixed(2)} m³</div>`:'';
-                const html = `<div style="font-family:sans-serif; padding:30px;"><h1>${doc.name}</h1><h3>Projet: ${c.name} - ${doc.ref}</h3><table style="width:100%; border-collapse:collapse; margin-top:20px;"><thead style="background:#0f172a; color:white;"><tr><th>Tâche</th><th>Zone</th><th>Qté</th></tr></thead><tbody>${rows}</tbody></table>${gravatsInfo}</div>`;
+                let rows = items.map(i => {
+                    cdcGravats += i.qty * (i.gravats || 0);
+                    return `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${i.desc}</td><td style="padding:10px; border-bottom:1px solid #eee;">${i.piece||'-'}</td><td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">${i.qty} ${i.unit}</td></tr>`;
+                }).join('');
+
+                let gravatsInfo = "";
+                if(cdcGravats > 0) {
+                    gravatsInfo = `<div style="margin-top:20px; padding:10px; background:#f1f5f9; border-radius:5px;"><strong>Volume Gravats pour ces travaux:</strong> ${cdcGravats.toFixed(2)} m³</div>`;
+                }
+
+                const html = `
+                    <div style="font-family:sans-serif; padding:30px;">
+                        <h1>${doc.name}</h1>
+                        <h3>Projet: ${c.name} - ${doc.ref}</h3>
+                        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                            <thead style="background:#0f172a; color:white;"><tr><th style="padding:10px; text-align:left;">Tâche</th><th style="padding:10px; text-align:left;">Zone</th><th style="padding:10px; text-align:left;">Qté</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                        ${gravatsInfo}
+                    </div>
+                `;
                 const opt = { margin: 10, filename: `${doc.name}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
                 html2pdf().set(opt).from(html).save();
             },
 
+            // --- FUNZIONI CAHIER DES CHARGES (CDC) ---
             openSelectCDCModal() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 if (!c.devisList || c.devisList.length === 0) return alert("Crea prima un devis!");
-                const s = document.getElementById('sel-source-devis'); s.innerHTML = '';
-                c.devisList.forEach(d => { let o = document.createElement('option'); o.value = d.id; o.text = d.name; s.appendChild(o); });
-                const pSel = document.getElementById('cdc-assignee'); pSel.innerHTML = '<option value="">-- Seleziona Partner --</option>';
-                (Store.data.partners || []).forEach(p => { let o = document.createElement('option'); o.value = p.name; o.text = `${p.name} (${p.role})`; pSel.appendChild(o); });
+                
+                // Popola Devis
+                const s = document.getElementById('sel-source-devis');
+                s.innerHTML = '';
+                c.devisList.forEach(d => {
+                    let o = document.createElement('option');
+                    o.value = d.id; o.text = d.name;
+                    s.appendChild(o);
+                });
+
+                // Popola Partner
+                const pSel = document.getElementById('cdc-assignee');
+                pSel.innerHTML = '<option value="">-- Seleziona Partner --</option>';
+                (Store.data.partners || []).forEach(p => {
+                    let o = document.createElement('option');
+                    o.value = p.name; o.text = `${p.name} (${p.role})`;
+                    pSel.appendChild(o);
+                });
+
                 App.state.selectedItems = new Set();
                 App.renderSelectionList();
                 document.getElementById('modal-select-cdc').classList.add('open');
@@ -1604,30 +1988,55 @@
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 const did = document.getElementById('sel-source-devis').value;
                 if (!did) return;
+                
                 const d = c.devisList.find(x => x.id == did);
-                const cont = document.getElementById('selection-list-container'); cont.innerHTML = '';
+                const cont = document.getElementById('selection-list-container');
+                cont.innerHTML = '';
+
                 d.items.forEach(item => {
                     const isChecked = App.state.selectedItems.has(item.id) ? 'checked' : '';
-                    const assignedInfo = item.assignedTo ? `<span class="assigned-badge"><i class="fas fa-user"></i> ${item.assignedTo}</span>` : '';
-                    const el = document.createElement('div'); el.className = 'check-container';
+                    const assignedInfo = item.assignedTo 
+                        ? `<span class="assigned-badge"><i class="fas fa-user"></i> ${item.assignedTo}</span>` 
+                        : '';
+                    
+                    const el = document.createElement('div');
+                    el.className = 'check-container';
                     el.onclick = (e) => App.toggleItemSelection(item.id, el);
-                    el.innerHTML = `<div class="custom-checkbox ${isChecked}"></div><div style="flex:1"><div style="font-weight:700; font-size:0.9rem;">${item.desc}</div><div style="font-size:0.8rem; color:var(--text-sub); display:flex; align-items:center;">${item.piece || 'Général'} ${assignedInfo}</div></div>`;
+                    el.innerHTML = `
+                        <div class="custom-checkbox ${isChecked}"></div>
+                        <div style="flex:1">
+                            <div style="font-weight:700; font-size:0.9rem;">${item.desc}</div>
+                            <div style="font-size:0.8rem; color:var(--text-sub); display:flex; align-items:center;">
+                                ${item.piece || 'Général'} ${assignedInfo}
+                            </div>
+                        </div>
+                    `;
                     cont.appendChild(el);
                 });
             },
 
             toggleItemSelection(id, el) {
-                if (App.state.selectedItems.has(id)) { App.state.selectedItems.delete(id); el.querySelector('.custom-checkbox').classList.remove('checked'); }
-                else { App.state.selectedItems.add(id); el.querySelector('.custom-checkbox').classList.add('checked'); }
+                if (App.state.selectedItems.has(id)) {
+                    App.state.selectedItems.delete(id);
+                    el.querySelector('.custom-checkbox').classList.remove('checked');
+                } else {
+                    App.state.selectedItems.add(id);
+                    el.querySelector('.custom-checkbox').classList.add('checked');
+                }
             },
 
             selectAllItems() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 const did = document.getElementById('sel-source-devis').value;
                 const d = c.devisList.find(x => x.id == did);
+                
                 const allSelected = (App.state.selectedItems.size === d.items.length);
-                if (allSelected) App.state.selectedItems.clear();
-                else d.items.forEach(i => App.state.selectedItems.add(i.id));
+                
+                if (allSelected) {
+                    App.state.selectedItems.clear();
+                } else {
+                    d.items.forEach(i => App.state.selectedItems.add(i.id));
+                }
                 App.renderSelectionList();
             },
 
@@ -1635,33 +2044,60 @@
                 if(App.state.selectedItems.size === 0) return alert("Seleziona almeno un lavoro.");
                 const name = document.getElementById('cdc-assignee').value;
                 if(!name) return alert("Seleziona un partner dalla lista.");
+                
                 const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId);
                 const d = c.devisList.find(x=>x.id==document.getElementById('sel-source-devis').value);
+                
                 let count = 0;
-                d.items.forEach(i => { if(App.state.selectedItems.has(i.id)) { i.assignedTo = name; count++; } });
+                d.items.forEach(i => {
+                    if(App.state.selectedItems.has(i.id)) {
+                        i.assignedTo = name;
+                        count++;
+                    }
+                });
+                
                 Store.save();
                 App.showToast(`${count} lavori assegnati a ${name}`);
-                App.renderSelectionList();
+                App.renderSelectionList(); // Ricarica la lista per vedere i badge
             },
 
+            // AJOUT CDC PHOTOS : Modification de saveCDC pour inclure la date et le nom enrichi
             saveCDC() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 const cli = Store.data.clients.find(x => x.id == c.clientId);
                 const did = document.getElementById('sel-source-devis').value;
                 const d = c.devisList.find(x => x.id == did);
+                
                 if (App.state.selectedItems.size === 0) return alert("Seleziona gli elementi da includere nel CDC.");
+
                 const selectedItemsList = d.items.filter(i => App.state.selectedItems.has(i.id));
                 const assigneeName = document.getElementById('cdc-assignee').value || "Général";
+                
+                // Création du nom enrichi : Date + Client + Chantier
                 const today = new Date();
-                const dateStr = today.toLocaleDateString('fr-FR').replace(/\//g, '-');
+                const dateStr = today.toLocaleDateString('fr-FR').replace(/\//g, '-'); // JJ-MM-AAAA
                 const clientName = cli ? cli.nom.replace(/\s+/g, '_') : 'Client';
                 const chantierName = c.name.replace(/\s+/g, '_');
                 const enrichedName = `${dateStr}_${clientName}_${chantierName}`;
-                const itemsCopy = selectedItemsList.map(item => ({ ...item, photos: [] }));
-                const newDoc = { id: Date.now(), name: enrichedName, ref: `CDC-${Date.now().toString().slice(-4)}`, date: new Date().toISOString(), items: itemsCopy };
+                
+                // Copie statica degli elementi, aggiungendo il campo photos vuoto
+                const itemsCopy = selectedItemsList.map(item => ({
+                    ...item,
+                    photos: [] // AJOUT CDC PHOTOS
+                }));
+                
+                const newDoc = {
+                    id: Date.now(),
+                    name: enrichedName,
+                    ref: `CDC-${Date.now().toString().slice(-4)}`,
+                    date: new Date().toISOString(),
+                    items: itemsCopy
+                };
+
                 if (!c.extraDocs) c.extraDocs = [];
                 c.extraDocs.push(newDoc);
                 Store.save();
+                
                 App.showToast("Documento CDC creato!");
                 App.closeModal('modal-select-cdc');
                 App.openHub(c.id);
