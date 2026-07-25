@@ -1,3 +1,10 @@
+Ecco il codice completo pronto per essere copiato su GitHub. 
+
+Per ottenere esattamente l'effetto che vedi nello screenshot (4 schede piene e il pezzetto di una quinta scheda a destra), ho apportato una piccolissima modifica alla funzione `App.renderHome()`: ora il codice prende i **primi 5 cantieri attivi** (anziché tutti o solo 4), e grazie al `padding-right: 20px` già impostato nel CSS sulla lista orizzontale, i primi 4 appariranno completamente visibili mentre il quinto sarà troncato a destra per suggerire all'utente la possibilità di scrollare.
+
+Tutti gli altri spazi, colori e logiche (fatture gialle/rosse, pulsanti blu/gialli, scroll verticale bloccato sulla home) rimangono perfettamente come nel tuo screen.
+
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1248,9 +1255,9 @@
                 if(activeProjects.length === 0) {
                     projContainer.innerHTML = '<div style="color:var(--text-sub); font-size:0.9rem; padding:10px;">Aucun chantier actif avec devis accepté.</div>';
                 } else {
-                    // TUTTI i cantieri attivi, non più limitati a 4.
-                    // Grazie al padding-right: 20px del CSS, su mobile si vedranno esattamente 4 rettangoli pieni + un pezzetto del 5° a destra.
-                    activeProjects.forEach(c => {
+                    // MODIFICA: Prendiamo i primi 5 cantieri. In questo modo, su schermi mobili, 
+                    // i primi 4 appariranno pieni e il quinto mostrerà un pezzetto a destra per lo scroll.
+                    activeProjects.slice(0, 5).forEach(c => {
                         const cli = Store.data.clients.find(x => x.id == c.clientId);
                         const cityText = c.city && c.city.trim() !== '' ? c.city : 'Ville inconnue';
                         const startText = c.startDate ? new Date(c.startDate).toLocaleDateString('fr-FR') : '--';
