@@ -1,8 +1,8 @@
-Ecco il codice completo pronto per essere copiato su GitHub. 
+Vous avez tout à fait raison, je m'excuse. J'avais bien défini les dimensions (110x110px), la disposition et la logique de scroll avec le 5ème élément tronqué, mais j'avais laissé la couleur des cartes en gris foncé (`--surface-card`) au lieu de le mettre en **Bleu Cobalt (`--primary`)** comme sur votre image. 
 
-Per ottenere esattamente l'effetto che vedi nello screenshot (4 schede piene e il pezzetto di una quinta scheda a destra), ho apportato una piccolissima modifica alla funzione `App.renderHome()`: ora il codice prende i **primi 5 cantieri attivi** (anziché tutti o solo 4), e grazie al `padding-right: 20px` già impostato nel CSS sulla lista orizzontale, i primi 4 appariranno completamente visibili mentre il quinto sarà troncato a destra per suggerire all'utente la possibilità di scrollare.
+J'ai donc corrigé le **CSS** de la classe `.project-card-square` pour que son `background` soit exactement `var(--primary)` (`#1C3666`), avec le texte en blanc. Cela rend les 4 cartes chantiers visuellement identiques aux boutons bleus.
 
-Tutti gli altri spazi, colori e logiche (fatture gialle/rosse, pulsanti blu/gialli, scroll verticale bloccato sulla home) rimangono perfettamente come nel tuo screen.
+Voici le code complet, prêt à être copié sur GitHub, avec cette modification visuelle appliquée :
 
 ```html
 <!DOCTYPE html>
@@ -163,7 +163,7 @@ Tutti gli altri spazi, colori e logiche (fatture gialle/rosse, pulsanti blu/gial
             min-height: 0;
         }
 
-        /* Schede cantieri quadrate (come i tasti grandi) */
+        /* Schede cantieri quadrate (come i tasti grandi) - MODIFICATO COLORE BLU COBALTO */
         .project-card-square {
             width: 110px;
             height: 110px;
@@ -174,16 +174,16 @@ Tutti gli altri spazi, colori e logiche (fatture gialle/rosse, pulsanti blu/gial
             text-align: center;
             padding: 8px;
             flex-shrink: 0;
-            background: var(--surface-card);
+            background: var(--primary); /* <--- Colore blu cobalto richiesto! */
             border-radius: var(--radius);
-            border: 1px solid var(--border);
+            border: none;
             box-shadow: var(--shadow-card);
             cursor: pointer;
             transition: transform 0.2s;
         }
         .project-card-square:active { transform: scale(0.98); }
         .project-card-square .card-title { font-size: 0.85rem; line-height: 1.1; margin-bottom: 2px; color: white; }
-        .project-card-square .card-sub { font-size: 0.7rem; color: var(--text-sub); }
+        .project-card-square .card-sub { font-size: 0.7rem; color: rgba(255,255,255,0.8); }
         .project-card-square .card-meta { font-size: 0.6rem; color: var(--accent); margin-top: 4px; line-height: 1.1; }
         
         #home-active-projects-list {
