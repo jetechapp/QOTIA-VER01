@@ -66,7 +66,6 @@
             margin: 0; padding: 0; 
             font-family: 'Inter', sans-serif; 
             background: var(--bg-body); color: var(--text-main); 
-            /* 5. Amélioration de la police globale pour une meilleure lisibilité */
             font-size: 16px; 
             line-height: 1.5;
             height: 100vh; width: 100vw;
@@ -129,10 +128,7 @@
         .card-sub { font-size: 0.95rem; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
         .card-tag { font-size: 0.8rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: var(--bg-body); color: var(--text-main); border:1px solid var(--border); display: inline-block; margin-bottom: 4px; }
         
-        .home-fixed-area { background: var(--bg-body); padding: 10px 20px 20px 20px; z-index: 40; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .welcome-block { margin-bottom: 15px; }
-        .welcome-name { font-size: 2.2rem; font-weight: 900; color: white; margin: 0; }
-        .welcome-date { font-size: 1rem; font-weight: 700; color: var(--accent); text-transform: capitalize; }
+        .home-fixed-area { background: var(--bg-body); padding: 10px 20px 15px 20px; z-index: 40; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         
         .big-btn { height: 110px; border-radius: var(--radius); border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.4); color: white; }
@@ -144,7 +140,23 @@
         .btn-client i { color: var(--primary) !important; }
         .big-btn i { font-size: 2rem; margin-bottom: 5px; }
         
-        /* 2 & 3. Bloc fixes carrés & boite facture avec scroll interne */
+        /* Home page layout - Bloccato e ottimizzato */
+        #view-home.active {
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .home-scroll-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 20px 20px 20px;
+            padding-bottom: 100px; /* Spazio per nav bar */
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* Schede cantieri quadrate (come i tasti grandi) */
         .project-card-square {
             width: 110px;
             height: 110px;
@@ -153,26 +165,40 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 10px;
+            padding: 8px;
             flex-shrink: 0;
             background: var(--surface-card);
-            border-radius: 12px;
+            border-radius: var(--radius);
             border: 1px solid var(--border);
+            box-shadow: var(--shadow-card);
+            cursor: pointer;
+            transition: transform 0.2s;
         }
-        .project-card-square .card-title { font-size: 0.85rem; line-height: 1.2; margin-bottom: 4px; }
-        .project-card-square .card-sub { font-size: 0.7rem; }
+        .project-card-square:active { transform: scale(0.98); }
+        .project-card-square .card-title { font-size: 0.9rem; line-height: 1.2; margin-bottom: 2px; color: white; }
+        .project-card-square .card-sub { font-size: 0.7rem; color: var(--text-sub); }
+        .project-card-square .card-meta { font-size: 0.6rem; color: var(--accent); margin-top: 4px; line-height: 1.1; }
         
+        #home-active-projects-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
+            flex-shrink: 0;
+        }
+
+        /* Contenitore fatture bloccato con scroll interno */
         #home-invoices-wrapper {
-            max-height: 300px;
+            flex: 1;
             overflow-y: auto;
             padding-right: 5px;
-            margin-bottom: 20px;
+            min-height: 0;
         }
         #home-invoices-wrapper .card-item { margin-bottom: 8px; }
         .invoice-pending { border-left: 4px solid var(--accent) !important; }
         .invoice-expired { border-left: 4px solid var(--danger) !important; }
 
-        /* 6. Sous-vues pour la page détail (Devis, CDC, Facture) */
         .hub-sub-view {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-body); z-index: 550;
@@ -244,9 +270,6 @@
         .photo-thumb:hover { transform: scale(1.05); }
         .photo-gallery { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
         .add-photo-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.9rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-
-        .dashboard-card { min-width: 260px; padding: 15px; border-radius: var(--radius); background: var(--surface-card); border: 1px solid var(--border); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.2s; }
-        .dashboard-card:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -266,28 +289,32 @@
 
     <main id="view-home" class="view-section active">
         <header class="mobile-header">
-            <div class="logo-text"><i class="fas fa-hammer"></i> QOTIA <span style="font-size:0.7em; opacity:0.6; font-weight:400;">v80</span></div>
+            <div class="logo-text">
+                <i class="fas fa-hammer"></i> QOTIA 
+                <span style="font-size:0.7em; opacity:0.6; font-weight:400;">v80</span>
+                <span id="header-date" style="margin-left:12px; font-size:0.9rem; font-weight:400; color:var(--accent);"></span>
+            </div>
             <button style="background:none; border:none; font-size:1.2rem; color:white;" onclick="App.nav('settings')"><i class="fas fa-cog"></i></button>
         </header>
+        
         <div class="home-fixed-area">
-            <div class="welcome-block"><div class="welcome-name">Bonjour, <span id="home-username">Jean</span></div><div class="welcome-date" id="home-date-display">...</div></div>
             <div class="action-grid" id="home-action-grid"></div>
         </div>
-        <div class="scroll-content">
-            <div id="home-active-projects-container">
-                <div class="section-separator" style="border:none; margin:0; padding-bottom:10px;">
-                    <div class="section-title">CHANTIERS EN COURS</div>
-                    <button class="action-create-btn" onclick="App.nav('projets')">Voir Tout ></button>
+        
+        <div class="home-scroll-wrapper">
+            <div id="home-active-projects-container" style="flex-shrink: 0;">
+                <div class="section-separator" style="border:none; margin:0; padding:5px 0 10px 0;">
+                    <div class="section-title" style="font-size:1rem;">CHANTIERS</div>
+                    <button class="action-create-btn" style="padding:4px 12px; font-size:0.8rem;" onclick="App.nav('projets')">Voir Tout ></button>
                 </div>
-                <div id="home-active-projects-list" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:15px; -webkit-overflow-scrolling:touch;"></div>
+                <div id="home-active-projects-list"></div>
             </div>
             
-            <div class="section-separator" style="margin-top: 20px;">
-                <div class="section-title">FACTURES EN ATTENTE</div>
+            <div class="section-separator" style="margin-top: 5px; margin-bottom: 10px;">
+                <div class="section-title" style="font-size:1rem;">FACTURES EN ATTENTE</div>
             </div>
-            <div id="home-invoices-list"></div>
             
-            <!-- 1. STATISTIQUES SUPPRIMÉES ICI -->
+            <div id="home-invoices-list" style="flex:1; display:flex; flex-direction:column; min-height:0;"></div>
         </div>
     </main>
 
@@ -304,7 +331,6 @@
                 <div style="background:rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; color:white; display:inline-block; margin-top:10px;" id="hub-ref">REF</div>
             </div>
             
-            <!-- 6. NOUVEAUX BOUTONS ORANGE / VIOLET / VERT -->
             <div id="hub-quick-actions" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px 15px 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
                 <button class="hub-action-btn" onclick="App.openHubSubview('devis')" style="background: var(--col-devis); color: white; border-radius: 12px; border: none; padding: 15px; font-weight: 900; font-size: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-card);">
                     <i class="fas fa-file-invoice" style="font-size: 1.8rem;"></i>
@@ -350,7 +376,6 @@
             </div>
         </div>
 
-        <!-- 6. SOUS-VUES (DEVIS, CDC, FACTURES) POUR LA PAGE CHANTIER -->
         <div id="hub-devis-subview" class="hub-sub-view">
             <div class="hub-sub-header">
                 <button class="header-back-container" onclick="App.closeHubSubview()"><i class="fas fa-chevron-left"></i> Retour</button>
@@ -443,7 +468,6 @@
         </div>
     </main>
 
-    <!-- NUOVA VISTA IA -->
     <main id="view-ai" class="view-section">
         <header class="mobile-header">
             <div class="logo-text"><i class="fas fa-robot"></i> QOTIA IA</div>
@@ -1212,11 +1236,10 @@
             },
 
             renderHome() {
-                document.getElementById('home-date-display').innerText = new Date().toLocaleDateString('fr-FR');
+                document.getElementById('header-date').innerText = new Date().toLocaleDateString('fr-FR');
                 
                 const isCollaborateur = Auth.role === 'collaborateur' || Auth.role === 'ouvrier';
 
-                // Active Projects List - MODIFICATION 2 (Cartes carrées)
                 const projContainer = document.getElementById('home-active-projects-list'); 
                 projContainer.innerHTML = ''; 
 
@@ -1224,37 +1247,28 @@
                 if(activeProjects.length === 0) {
                     projContainer.innerHTML = '<div style="color:var(--text-sub); font-size:0.9rem; padding:10px;">Aucun chantier actif avec devis accepté.</div>';
                 } else {
-                    activeProjects.forEach(c => {
+                    // Mostra solo i primi 4 cantieri
+                    activeProjects.slice(0, 4).forEach(c => {
                         const cli = Store.data.clients.find(x => x.id == c.clientId);
-                        let totalCA = 0;
-                        let acceptedCA = 0;
-                        (c.devisList || []).forEach(d => {
-                            (d.items || []).forEach(i => {
-                                const rowT = i.qty * i.price;
-                                totalCA += rowT;
-                                if (d.status === 'Accepté') acceptedCA += rowT;
-                            });
-                        });
-                        let perc = totalCA > 0 ? Math.round((acceptedCA / totalCA) * 100) : 0;
+                        const cityText = c.city && c.city.trim() !== '' ? c.city : 'Ville inconnue';
+                        const startText = c.startDate ? new Date(c.startDate).toLocaleDateString('fr-FR') : '--';
+                        const endText = c.endDate ? new Date(c.endDate).toLocaleDateString('fr-FR') : '--';
 
                         const card = document.createElement('div');
                         card.className = 'dashboard-card project-card-square';
                         card.onclick = () => App.openHub(c.id);
                         card.innerHTML = `
                             <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; width:100%; height:100%;">
-                                <div style="font-weight:900; font-size:0.95rem; color:white; margin-bottom:2px; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.name}</div>
-                                <div style="font-size:0.75rem; color:var(--text-sub);">${cli ? cli.nom : 'Inconnu'}</div>
-                                <div style="background: var(--primary); color: white; padding: 2px 10px; border-radius: 12px; font-weight: 900; font-size: 1rem; margin-top: 4px;">${perc}%</div>
-                                <div style="width: 100%; background: #333; height: 6px; border-radius: 10px; margin-top: 6px; overflow:hidden;">
-                                    <div style="width: ${perc}%; background: var(--accent); height: 100%; border-radius: 10px;"></div>
-                                </div>
+                                <div class="card-title" style="font-size:0.85rem;">${c.name}</div>
+                                <div class="card-sub" style="font-size:0.7rem;">${cli ? cli.nom : 'Inconnu'}</div>
+                                <div class="card-meta">${cityText}</div>
+                                <div class="card-meta" style="font-size:0.55rem; margin-top:2px;">${startText} - ${endText}</div>
                             </div>
                         `;
                         projContainer.appendChild(card);
                     });
                 }
 
-                // Pending Invoices List - MODIFICATION 3 & 4 (Scroll interne & Jaune/Rouge)
                 const invContainer = document.getElementById('home-invoices-list');
                 invContainer.innerHTML = '';
                 let hasInvoices = false;
@@ -1265,18 +1279,17 @@
                         const cli = Store.data.clients.find(x=>x.id==c.clientId);
                         hasInvoices = true;
                         
-                        // Gestion des couleurs (Jaune pour en attente, Rouge pour échéance dépassée)
                         const isOverdue = f.dueDate && new Date(f.dueDate) < new Date();
                         const colorClass = isOverdue ? 'invoice-expired' : 'invoice-pending';
                         const textColor = isOverdue ? 'var(--danger)' : 'var(--accent)';
 
                         htmlInvoices += `
-                            <div class="card-item ${colorClass}" onclick="App.openHub(${c.id})">
+                            <div class="card-item ${colorClass}" onclick="App.openHub(${c.id})" style="padding:12px 16px;">
                                 <div class="card-info">
-                                    <div class="card-title">${f.ref}</div>
-                                    <div class="card-sub">${cli ? cli.nom : '-'}</div>
+                                    <div class="card-title" style="font-size:0.9rem;">${f.ref}</div>
+                                    <div class="card-sub" style="font-size:0.8rem;">${cli ? cli.nom : '-'}</div>
                                 </div>
-                                <div style="font-weight:900; color:${textColor};">${App.formatMoney(f.amount)}</div>
+                                <div style="font-weight:900; color:${textColor}; font-size:0.9rem;">${App.formatMoney(f.amount)}</div>
                             </div>
                         `;
                     });
@@ -1526,7 +1539,6 @@
                 this.nav('hub');
             },
 
-            // 6. NOUVELLES FONCTIONS DE NAVIGATION POUR LES SOUS-VUES DE CHANTIER
             openHubSubview(type) {
                 document.querySelector('#view-hub .scroll-content').style.display = 'none';
                 const subview = document.getElementById('hub-' + type + '-subview');
@@ -2697,7 +2709,10 @@
                         id:Date.now(), 
                         clientId:cid, 
                         name:nom, 
-                        ref:"C-"+Date.now().toString().slice(-4), 
+                        ref:"C-"+Date.now().toString().slice(-4),
+                        city: "", // Aggiunto supporto per città
+                        startDate: null, // Aggiunto supporto per data inizio
+                        endDate: null, // Aggiunto supporto per data fine
                         devisList:[], 
                         factures:[], 
                         extraDocs:[]
