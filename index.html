@@ -175,7 +175,7 @@
             transition: transform 0.2s;
         }
         .project-card-square:active { transform: scale(0.98); }
-        .project-card-square .card-title { font-size: 0.9rem; line-height: 1.2; margin-bottom: 2px; color: white; }
+        .project-card-square .card-title { font-size: 0.85rem; line-height: 1.1; margin-bottom: 2px; color: white; }
         .project-card-square .card-sub { font-size: 0.7rem; color: var(--text-sub); }
         .project-card-square .card-meta { font-size: 0.6rem; color: var(--accent); margin-top: 4px; line-height: 1.1; }
         
@@ -184,6 +184,7 @@
             gap: 12px;
             overflow-x: auto;
             padding-bottom: 10px;
+            padding-right: 20px; /* Crea l'effetto "pezzetto di cantiere" a destra */
             -webkit-overflow-scrolling: touch;
             flex-shrink: 0;
         }
@@ -1247,8 +1248,9 @@
                 if(activeProjects.length === 0) {
                     projContainer.innerHTML = '<div style="color:var(--text-sub); font-size:0.9rem; padding:10px;">Aucun chantier actif avec devis accepté.</div>';
                 } else {
-                    // Mostra solo i primi 4 cantieri
-                    activeProjects.slice(0, 4).forEach(c => {
+                    // TUTTI i cantieri attivi, non più limitati a 4.
+                    // Grazie al padding-right: 20px del CSS, su mobile si vedranno esattamente 4 rettangoli pieni + un pezzetto del 5° a destra.
+                    activeProjects.forEach(c => {
                         const cli = Store.data.clients.find(x => x.id == c.clientId);
                         const cityText = c.city && c.city.trim() !== '' ? c.city : 'Ville inconnue';
                         const startText = c.startDate ? new Date(c.startDate).toLocaleDateString('fr-FR') : '--';
