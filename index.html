@@ -1,8 +1,3 @@
-Ecco il codice completo con le modifiche richieste. Ho aggiornato i colori per un'esperienza ottimale in cantiere (tema scuro ad alto contrasto), ho ridisegnato la home page sostituendo l'agenda con la lista dei cantieri attivi e le fatture in attesa (proprio come nell'immagine di riferimento), e ho creato i pulsanti orizzontali per Devis, CDC e Fatture nella scheda del cantiere.
-
-Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il codice è pronto per essere copiato interamente su GitHub.
-
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -71,7 +66,9 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
             margin: 0; padding: 0; 
             font-family: 'Inter', sans-serif; 
             background: var(--bg-body); color: var(--text-main); 
-            font-size: 15px; 
+            /* 5. Amélioration de la police globale pour une meilleure lisibilité */
+            font-size: 16px; 
+            line-height: 1.5;
             height: 100vh; width: 100vw;
             display: flex; flex-direction: column; overflow: hidden;
             padding-top: env(safe-area-inset-top);
@@ -82,8 +79,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
         
         .mobile-header { flex-shrink: 0; height: var(--h-header); background: rgba(26,26,26,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 50; transition: background 0.3s; }
         .logo-text { font-weight: 800; font-size: 1.3rem; color: white; display: flex; align-items: center; gap: 10px; }
-        .header-action-btn { background: var(--accent); color: var(--primary); border: none; border-radius: 30px; padding: 8px 18px; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
-        .header-back-container { display: flex; align-items: center; gap: 5px; background: transparent; border: none; cursor: pointer; color: white; font-weight: 700; font-size: 0.9rem; padding: 10px 0; }
+        .header-action-btn { background: var(--accent); color: var(--primary); border: none; border-radius: 30px; padding: 10px 20px; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+        .header-back-container { display: flex; align-items: center; gap: 5px; background: transparent; border: none; cursor: pointer; color: white; font-weight: 800; font-size: 1rem; padding: 10px 0; }
         .header-back-container i { font-size: 1.2rem; }
 
         .scroll-content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 120px; -webkit-overflow-scrolling: touch; }
@@ -98,59 +95,104 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
         
         #editor-list-container { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 140px; }
 
-        .client-badge { font-size: 0.75rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
-        .project-title { font-size: 1.2rem; font-weight: 900; color: var(--primary); margin-top: 2px; }
+        .client-badge { font-size: 0.85rem; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+        .project-title { font-size: 1.4rem; font-weight: 900; color: white; margin-top: 2px; }
         
         .kpi-row { display: flex; gap: 10px; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); }
         .kpi-box { flex: 1; background: var(--surface-card); padding: 8px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
-        .kpi-label { font-size: 0.65rem; color: var(--text-sub); font-weight: 700; text-transform: uppercase; }
-        .kpi-val { font-size: 1.1rem; font-weight: 800; color: white; }
+        .kpi-label { font-size: 0.75rem; color: var(--text-sub); font-weight: 800; text-transform: uppercase; }
+        .kpi-val { font-size: 1.2rem; font-weight: 900; color: white; }
         
         .view-toggle { display: flex; padding: 10px 20px; gap: 10px; background: var(--bg-body); border-bottom: 1px solid var(--border); }
-        .toggle-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: var(--surface); color: var(--text-sub); font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .toggle-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: var(--surface); color: var(--text-sub); font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: var(--col-devis); color: white; box-shadow: 0 2px 5px rgba(234, 88, 12, 0.3); }
 
         .piece-section { margin-bottom: 20px; }
         .piece-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; cursor: pointer; background: var(--surface); border-radius: 8px; margin-bottom: 10px; padding: 10px; color: white; }
-        .piece-title { font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .piece-title { font-weight: 900; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
         
         .e-card { background: var(--surface-card); margin: 0 0 10px 0; padding: 15px; border-radius: 12px; border: 1px solid var(--border); border-left: 3px solid var(--primary); box-shadow: var(--shadow-card); }
         .e-card-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .e-desc { font-weight: 700; color: var(--text-main); font-size: 0.95rem; width: 65%; line-height: 1.4; }
-        .e-loc-tag { display: inline-block; font-size: 0.7rem; font-weight: 700; color: var(--text-sub); background: var(--bg-body); padding: 2px 6px; border-radius: 4px; margin-top: 4px; border:1px solid var(--border); }
+        .e-desc { font-weight: 800; color: var(--text-main); font-size: 1rem; width: 65%; line-height: 1.4; }
+        .e-loc-tag { display: inline-block; font-size: 0.75rem; font-weight: 800; color: var(--text-sub); background: var(--bg-body); padding: 2px 6px; border-radius: 4px; margin-top: 4px; border:1px solid var(--border); }
         .e-stats { display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; margin-top: 8px; }
         .stat-box { flex: 1; text-align: center; }
-        .stat-lbl { font-size: 0.65rem; color: var(--text-sub); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
-        .stat-val { font-size: 0.8rem; font-weight: 700; color: white; }
+        .stat-lbl { font-size: 0.7rem; color: var(--text-sub); font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
+        .stat-val { font-size: 0.9rem; font-weight: 800; color: white; }
         .stat-val.time { color: var(--time); }
         
-        .floating-fab { position: fixed; bottom: 110px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; font-size: 1.6rem; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; cursor: pointer; transition: transform 0.1s; }
+        .floating-fab { position: fixed; bottom: 110px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; font-size: 1.8rem; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; cursor: pointer; transition: transform 0.1s; }
 
         .card-item { background: var(--surface-card); padding: 18px; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-card); }
         .card-info { flex: 1; }
-        .card-title { font-weight: 800; font-size: 1.05rem; color: white; margin-bottom: 4px; }
-        .card-sub { font-size: 0.9rem; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
-        .card-tag { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: var(--bg-body); color: var(--text-main); border:1px solid var(--border); display: inline-block; margin-bottom: 4px; }
+        .card-title { font-weight: 900; font-size: 1.1rem; color: white; margin-bottom: 4px; }
+        .card-sub { font-size: 0.95rem; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
+        .card-tag { font-size: 0.8rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: var(--bg-body); color: var(--text-main); border:1px solid var(--border); display: inline-block; margin-bottom: 4px; }
         
         .home-fixed-area { background: var(--bg-body); padding: 10px 20px 20px 20px; z-index: 40; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .welcome-block { margin-bottom: 15px; }
-        .welcome-name { font-size: 1.8rem; font-weight: 900; color: white; margin: 0; }
-        .welcome-date { font-size: 0.9rem; font-weight: 600; color: var(--accent); text-transform: capitalize; }
+        .welcome-name { font-size: 2.2rem; font-weight: 900; color: white; margin: 0; }
+        .welcome-date { font-size: 1rem; font-weight: 700; color: var(--accent); text-transform: capitalize; }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         
-        .big-btn { height: 95px; border-radius: var(--radius); border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.4); color: white; }
-        .big-btn span { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 5px; }
+        .big-btn { height: 110px; border-radius: var(--radius); border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.4); color: white; }
+        .big-btn span { font-weight: 900; font-size: 0.9rem; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 5px; }
         
         .btn-chantier { background: var(--primary); color: white; }
         .btn-chantier i { color: white; }
         .btn-client { background: var(--accent); color: var(--primary); }
         .btn-client i { color: var(--primary) !important; }
-        .big-btn i { font-size: 1.8rem; margin-bottom: 5px; }
+        .big-btn i { font-size: 2rem; margin-bottom: 5px; }
         
+        /* 2 & 3. Bloc fixes carrés & boite facture avec scroll interne */
+        .project-card-square {
+            width: 110px;
+            height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            flex-shrink: 0;
+            background: var(--surface-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .project-card-square .card-title { font-size: 0.85rem; line-height: 1.2; margin-bottom: 4px; }
+        .project-card-square .card-sub { font-size: 0.7rem; }
+        
+        #home-invoices-wrapper {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-bottom: 20px;
+        }
+        #home-invoices-wrapper .card-item { margin-bottom: 8px; }
+        .invoice-pending { border-left: 4px solid var(--accent) !important; }
+        .invoice-expired { border-left: 4px solid var(--danger) !important; }
+
+        /* 6. Sous-vues pour la page détail (Devis, CDC, Facture) */
+        .hub-sub-view {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-body); z-index: 550;
+            display: none; flex-direction: column;
+        }
+        .hub-sub-header {
+            height: var(--h-header);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; flex-shrink: 0;
+        }
+        .hub-sub-content {
+            flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 120px;
+        }
+
         .hub-header-card { background: var(--primary); padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; color: white; }
         .section-separator { display: flex; align-items: center; justify-content: space-between; margin-top: 25px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-        .section-title { font-size: 1.1rem; font-weight: 800; color: white; }
-        .action-create-btn { background: var(--surface-card); color: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .section-title { font-size: 1.2rem; font-weight: 900; color: white; }
+        .action-create-btn { background: var(--surface-card); color: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
         .check-container { display: flex; align-items: center; padding: 16px 12px; background: var(--surface-card); border-bottom: 1px solid var(--border); cursor: pointer; }
         .custom-checkbox { width: 36px; height: 36px; border: 3px solid var(--border-input); border-radius: 8px; margin-right: 15px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
@@ -160,29 +202,29 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
         .assigned-badge { background: #DCFCE7; color: #166534; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 5px; display: inline-flex; align-items: center; gap: 4px; }
 
         .room-tag-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0 15px 0; -webkit-overflow-scrolling: touch; }
-        .room-tag-btn { background: var(--surface); color: var(--text-sub); border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
+        .room-tag-btn { background: var(--surface); color: var(--text-sub); border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 0.9rem; font-weight: 800; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
         .room-tag-btn:active, .room-tag-btn.active { background: var(--success); color: white; border-color: var(--success); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--h-nav); background: var(--surface); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 1000; align-items: flex-start; padding-top: 14px; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); background: transparent; border: none; font-size: 0.7rem; font-weight: 600; gap: 5px; cursor: pointer; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); background: transparent; border: none; font-size: 0.8rem; font-weight: 800; gap: 5px; cursor: pointer; }
         .nav-btn.active { color: var(--col-nav-active); }
         .nav-btn.active i { color: var(--col-nav-active); }
         .nav-btn i { font-size: 1.5rem; }
 
         .full-modal { position: fixed; inset: 0; background: var(--bg-body); display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 5000; }
         .full-modal.open { transform: translateY(0); }
-        .modal-header { height: 70px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-weight: 800; font-size: 1.2rem; color: white; flex-shrink: 0; }
+        .modal-header { height: 70px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-weight: 900; font-size: 1.3rem; color: white; flex-shrink: 0; }
         .modal-body { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 100px; }
         .modal-footer { padding: 20px; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: max(20px, env(safe-area-inset-bottom)); flex-shrink: 0; display:flex; gap:10px; }
         
-        .app-input { width: 100%; height: 50px; background: var(--surface); border: 2px solid var(--border-input); border-radius: 12px; padding: 0 15px; font-size: 1rem; color: white; margin-bottom: 15px; outline: none; font-weight: 500; appearance: none; transition: border 0.2s; }
+        .app-input { width: 100%; height: 50px; background: var(--surface); border: 2px solid var(--border-input); border-radius: 12px; padding: 0 15px; font-size: 1rem; color: white; margin-bottom: 15px; outline: none; font-weight: 600; appearance: none; transition: border 0.2s; }
         .app-input:focus { border-color: var(--accent); }
         .app-input::placeholder { color: var(--text-sub); }
         
-        .btn-primary { width: 100%; height: 50px; background: var(--accent); color: var(--primary); font-weight: 700; border-radius: 12px; border: none; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+        .btn-primary { width: 100%; height: 50px; background: var(--accent); color: var(--primary); font-weight: 800; border-radius: 12px; border: none; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
 
         .type-switch { display: flex; background: var(--surface); padding: 5px; border-radius: 14px; margin-bottom: 20px; }
-        .type-option { flex: 1; text-align: center; padding: 12px; font-weight: 700; font-size: 0.95rem; color: var(--text-sub); border-radius: 10px; cursor: pointer; }
+        .type-option { flex: 1; text-align: center; padding: 12px; font-weight: 800; font-size: 1rem; color: var(--text-sub); border-radius: 10px; cursor: pointer; }
         .type-option.active { background: var(--primary); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         #view-projets .mobile-header { background: var(--primary); }
@@ -195,13 +237,13 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
         #modal-signature { z-index: 8000 !important; }
 
         #toast-container { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); z-index: 9000; pointer-events: none; width: 85%; }
-        .toast { background: var(--surface-card); color: white; padding: 14px; border: 1px solid var(--border); border-radius: 50px; font-weight: 600; font-size: 0.9rem; opacity: 0; transform: translateY(20px); transition: all 0.3s; margin-top: 10px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .toast { background: var(--surface-card); color: white; padding: 14px; border: 1px solid var(--border); border-radius: 50px; font-weight: 800; font-size: 1rem; opacity: 0; transform: translateY(20px); transition: all 0.3s; margin-top: 10px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         .toast.show { opacity: 1; transform: translateY(0); }
 
         .photo-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.2s; }
         .photo-thumb:hover { transform: scale(1.05); }
         .photo-gallery { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
-        .add-photo-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .add-photo-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.9rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 
         .dashboard-card { min-width: 260px; padding: 15px; border-radius: var(--radius); background: var(--surface-card); border: 1px solid var(--border); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.2s; }
         .dashboard-card:active { transform: scale(0.98); }
@@ -218,7 +260,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
             <input type="email" id="login-email" class="app-input" placeholder="Email">
             <input type="password" id="login-pass" class="app-input" placeholder="Mot de passe">
             <button class="btn-primary" onclick="Auth.login()" id="btn-login">ENTRER</button>
-            <div id="login-msg" style="color:var(--danger); font-size:0.8rem; margin-top:10px; font-weight:700;"></div>
+            <div id="login-msg" style="color:var(--danger); font-size:0.9rem; margin-top:10px; font-weight:800;"></div>
         </div>
     </div>
 
@@ -245,12 +287,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
             </div>
             <div id="home-invoices-list"></div>
             
-            <div id="home-dashboard-block" style="margin-top:25px; display:none; flex-direction:column; gap:20px;">
-                <div style="background: var(--surface-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-card);">
-                    <div style="font-size: 0.85rem; font-weight: 800; color: white; margin-bottom: 10px; text-transform: uppercase;">Rentabilité Mensuelle Nette</div>
-                    <canvas id="chart-global-rentabilite" height="200"></canvas>
-                </div>
-            </div>
+            <!-- 1. STATISTIQUES SUPPRIMÉES ICI -->
         </div>
     </main>
 
@@ -267,17 +304,18 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 <div style="background:rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; color:white; display:inline-block; margin-top:10px;" id="hub-ref">REF</div>
             </div>
             
+            <!-- 6. NOUVEAUX BOUTONS ORANGE / VIOLET / VERT -->
             <div id="hub-quick-actions" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px 15px 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
-                <button class="hub-action-btn" onclick="App.createNewDevis()" style="background: var(--accent); color: var(--primary); border-radius: 12px; border: none; padding: 15px; font-weight: 800; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-card);">
-                    <i class="fas fa-file-invoice" style="font-size: 1.5rem;"></i>
+                <button class="hub-action-btn" onclick="App.openHubSubview('devis')" style="background: var(--col-devis); color: white; border-radius: 12px; border: none; padding: 15px; font-weight: 900; font-size: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-card);">
+                    <i class="fas fa-file-invoice" style="font-size: 1.8rem;"></i>
                     <span>DEVIS</span>
                 </button>
-                <button class="hub-action-btn" onclick="App.openSelectCDCModal()" style="background: var(--col-cdc); color: white; border-radius: 12px; border: none; padding: 15px; font-weight: 800; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-card);">
-                    <i class="fas fa-tasks" style="font-size: 1.5rem;"></i>
+                <button class="hub-action-btn" onclick="App.openHubSubview('cdc')" style="background: var(--col-cdc); color: white; border-radius: 12px; border: none; padding: 15px; font-weight: 900; font-size: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-card);">
+                    <i class="fas fa-tasks" style="font-size: 1.8rem;"></i>
                     <span>CDC</span>
                 </button>
-                <button class="hub-action-btn" onclick="App.openCreateInvoiceModal()" style="background: var(--col-facture); color: white; border-radius: 12px; border: none; padding: 15px; font-weight: 800; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-card);">
-                    <i class="fas fa-euro-sign" style="font-size: 1.5rem;"></i>
+                <button class="hub-action-btn" onclick="App.openHubSubview('facture')" style="background: var(--col-facture); color: white; border-radius: 12px; border: none; padding: 15px; font-weight: 900; font-size: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-card);">
+                    <i class="fas fa-euro-sign" style="font-size: 1.8rem;"></i>
                     <span>FACTURE</span>
                 </button>
             </div>
@@ -286,7 +324,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 <div id="hub-margin-section" style="display: none; background: var(--surface-card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-size: 0.75rem; color: var(--text-sub); font-weight: 700; text-transform: uppercase;">Marge Chantier (Devis Acceptés)</div>
+                            <div style="font-size: 0.75rem; color: var(--text-sub); font-weight: 800; text-transform: uppercase;">Marge Chantier (Devis Acceptés)</div>
                             <div id="hub-total-margin" style="font-size: 1.4rem; font-weight: 900; color: var(--accent);">0,00 €</div>
                         </div>
                         <button class="action-create-btn" style="background: var(--success); color: white; border: none;" onclick="App.generateMarginPDF()"><i class="fas fa-file-pdf"></i> Analyser</button>
@@ -310,6 +348,34 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     <div id="hub-factures-list"></div>
                 </div>
             </div>
+        </div>
+
+        <!-- 6. SOUS-VUES (DEVIS, CDC, FACTURES) POUR LA PAGE CHANTIER -->
+        <div id="hub-devis-subview" class="hub-sub-view">
+            <div class="hub-sub-header">
+                <button class="header-back-container" onclick="App.closeHubSubview()"><i class="fas fa-chevron-left"></i> Retour</button>
+                <div class="logo-text" style="color:var(--col-devis);">DEVIS</div>
+                <button class="header-action-btn" style="background:var(--col-devis); color: white;" onclick="App.createNewDevis()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="hub-sub-content" id="hub-devis-list-full"></div>
+        </div>
+
+        <div id="hub-cdc-subview" class="hub-sub-view">
+            <div class="hub-sub-header">
+                <button class="header-back-container" onclick="App.closeHubSubview()"><i class="fas fa-chevron-left"></i> Retour</button>
+                <div class="logo-text" style="color:var(--col-cdc);">CDC</div>
+                <button class="header-action-btn" style="background:var(--col-cdc); color: white;" onclick="App.openSelectCDCModal()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="hub-sub-content" id="hub-cdc-list-full"></div>
+        </div>
+
+        <div id="hub-facture-subview" class="hub-sub-view">
+            <div class="hub-sub-header">
+                <button class="header-back-container" onclick="App.closeHubSubview()"><i class="fas fa-chevron-left"></i> Retour</button>
+                <div class="logo-text" style="color:var(--col-facture);">FACTURES</div>
+                <button class="header-action-btn" style="background:var(--col-facture); color: white;" onclick="App.openCreateInvoiceModal()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="hub-sub-content" id="hub-facture-list-full"></div>
         </div>
     </main>
 
@@ -373,7 +439,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
         <header class="mobile-header"><div class="logo-text">RÉGLAGES</div></header>
         <div class="scroll-content">
             <div id="settings-partners-list" style="margin-bottom:20px;"></div>
-            <button class="card-item" style="width:100%; justify-content:center; color:var(--accent); font-weight:700;" onclick="App.openPartnerModal()">+ Ajouter un Partenaire</button>
+            <button class="card-item" style="width:100%; justify-content:center; color:var(--accent); font-weight:800;" onclick="App.openPartnerModal()">+ Ajouter un Partenaire</button>
         </div>
     </main>
 
@@ -386,15 +452,15 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
         <div class="scroll-content" style="padding-bottom: 80px; display: flex; flex-direction: column;">
             <div id="ai-chat-container" style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
                 <div style="background: var(--surface-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-card); max-width: 85%; align-self: flex-start;">
-                    <div style="font-weight: 800; color: var(--accent); margin-bottom: 5px; font-size: 0.8rem;"><i class="fas fa-robot"></i> Assistant Qotia</div>
-                    <div style="line-height: 1.4; color: var(--text-main);">Bonjour ! Je suis votre assistant virtuel pour les devis. Décrivez-moi les travaux à réaliser (ex: "Je dois retirer le carrelage et en poser un nouveau") et je vous suggérerai les articles de notre base de données.</div>
+                    <div style="font-weight: 900; color: var(--accent); margin-bottom: 5px; font-size: 0.9rem;"><i class="fas fa-robot"></i> Assistant Qotia</div>
+                    <div style="line-height: 1.5; color: var(--text-main); font-size: 1rem;">Bonjour ! Je suis votre assistant virtuel pour les devis. Décrivez-moi les travaux à réaliser (ex: "Je dois retirer le carrelage et en poser un nouveau") et je vous suggérerai les articles de notre base de données.</div>
                 </div>
             </div>
         </div>
 
         <div style="position: fixed; bottom: var(--h-nav); left: 0; width: 100%; background: var(--surface); padding: 10px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; z-index: 40; padding-bottom: max(10px, env(safe-area-inset-bottom));">
-            <input type="text" id="ai-input" class="app-input" placeholder="Décrivez les travaux..." style="margin-bottom: 0; flex: 1; border-radius: 20px; height: 45px;" onkeypress="if(event.key === 'Enter') App.sendAIMessage()">
-            <button onclick="App.sendAIMessage()" style="background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <input type="text" id="ai-input" class="app-input" placeholder="Décrivez les travaux..." style="margin-bottom: 0; flex: 1; border-radius: 20px; height: 50px;" onkeypress="if(event.key === 'Enter') App.sendAIMessage()">
+            <button onclick="App.sendAIMessage()" style="background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.2rem;">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
@@ -403,7 +469,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
     <nav class="bottom-nav">
         <button class="nav-btn active" onclick="App.nav('home')" id="nav-home"><i class="fas fa-home"></i><span>Accueil</span></button>
         <button class="nav-btn" onclick="App.nav('documents')" id="nav-documents"><i class="fas fa-folder"></i><span>Docs</span></button>
-        <button class="nav-btn" onclick="App.nav('ai')" id="nav-ai"><div style="width:50px; height:50px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-top:-25px; box-shadow:0 8px 20px rgba(0,0,0,0.5); border:4px solid var(--surface);"><i class="fas fa-robot" style="color:var(--accent); font-size:1.4rem;"></i></div></button>
+        <button class="nav-btn" onclick="App.nav('ai')" id="nav-ai"><div style="width:50px; height:50px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-top:-25px; box-shadow:0 8px 20px rgba(0,0,0,0.5); border:4px solid var(--surface);"><i class="fas fa-robot" style="color:var(--accent); font-size:1.6rem;"></i></div></button>
         <button class="nav-btn" onclick="App.nav('clients')" id="nav-clients"><i class="fas fa-users"></i><span>Clients</span></button>
         <button class="nav-btn" onclick="App.nav('settings')" id="nav-settings"><i class="fas fa-cog"></i><span>Param.</span></button>
     </nav>
@@ -411,8 +477,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
     <div id="modal-partner" class="full-modal">
         <div class="modal-header"><h3>Nouveau Partenaire</h3><button class="header-back-container" onclick="App.closeModal('modal-partner')">×</button></div>
         <div class="modal-body">
-            <label style="font-weight:700; color: var(--text-sub);">Nom</label><input type="text" id="ptn-name" class="app-input" placeholder="ex: Mario Rossi">
-            <label style="font-weight:700; color: var(--text-sub);">Rôle</label>
+            <label style="font-weight:800; color: var(--text-sub);">Nom</label><input type="text" id="ptn-name" class="app-input" placeholder="ex: Mario Rossi">
+            <label style="font-weight:800; color: var(--text-sub);">Rôle</label>
             <select id="ptn-role" class="app-input">
                 <option value="Collaborateur">Collaborateur</option>
                 <option value="Artisan">Artisan</option>
@@ -424,17 +490,17 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
     <div id="modal-select-cdc" class="full-modal">
         <div class="modal-header"><h3>Opérations Ouvrages</h3><button class="header-back-container" onclick="App.closeModal('modal-select-cdc')">×</button></div>
         <div class="modal-body">
-            <label style="font-weight:700; margin-bottom:10px; display:block; color: var(--text-sub);">Source Devis</label>
+            <label style="font-weight:800; margin-bottom:10px; display:block; color: var(--text-sub);">Source Devis</label>
             <select id="sel-source-devis" class="app-input" onchange="App.renderSelectionList()"></select>
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <label style="font-weight:700; color:var(--text-sub);">Sélectionner le tâches:</label>
-                <button style="border:none; background:none; color:var(--accent); font-weight:700;" onclick="App.selectAllItems()">Tout cocher</button>
+                <label style="font-weight:800; color:var(--text-sub);">Sélectionner le tâches:</label>
+                <button style="border:none; background:none; color:var(--accent); font-weight:800;" onclick="App.selectAllItems()">Tout cocher</button>
             </div>
             
             <div id="selection-list-container" style="background:var(--surface); border-radius:12px; border:1px solid var(--border); overflow:hidden; max-height:400px; overflow-y:auto;"></div>
             
-            <label style="font-weight:700; margin-top:20px; display:block; color: var(--text-sub);">Attribuer à:</label>
+            <label style="font-weight:800; margin-top:20px; display:block; color: var(--text-sub);">Attribuer à:</label>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <select id="cdc-assignee" class="app-input" style="flex:1; margin:0;"></select>
                 <button class="btn-primary" style="width:100px;" onclick="App.assignCollaborator()">OK</button>
@@ -473,8 +539,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 <div style="background:#ECFDF5; border:1px solid #10B981; color:#065F46; padding:15px; border-radius:10px; margin-bottom:20px; text-align:center; font-size:0.9rem;">
                     <i class="fas fa-check-circle"></i> Un code à 4 chiffres a été envoyé par e-mail.
                 </div>
-                <label style="font-weight:700; color:var(--text-sub); margin-bottom:10px;">Code de Confirmation :</label>
-                <input type="text" id="sig-otp-input" class="app-input" placeholder="0 0 0 0" style="text-align:center; font-size:2rem; letter-spacing:15px; font-weight:900;" maxlength="4">
+                <label style="font-weight:800; color:var(--text-sub); margin-bottom:10px;">Code de Confirmation :</label>
+                <input type="text" id="sig-otp-input" class="app-input" placeholder="0 0 0 0" style="text-align:center; font-size:2.5rem; letter-spacing:15px; font-weight:900;" maxlength="4">
             </div>
             
         </div>
@@ -487,7 +553,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
     <div id="modal-library" class="full-modal">
         <div class="modal-header">
             <h3>Bibliothèque</h3>
-            <button onclick="App.closeModal('modal-library')" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 16px; border-radius:30px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer;">
+            <button onclick="App.closeModal('modal-library')" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 16px; border-radius:30px; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.9rem;">
                 <i class="fas fa-times"></i> FERMER
             </button>
         </div>
@@ -498,9 +564,9 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     <div id="room-view-mode" style="padding:15px;">
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
                             <div>
-                                <div style="font-size:0.7rem; font-weight:700; color:var(--text-sub); text-transform:uppercase;">Pièce Cible</div>
-                                <div id="room-display-final" style="font-size:1.1rem; font-weight:800; color:white;">Sélectionner une pièce</div>
-                                <div id="room-details-final" style="font-size:0.8rem; color:var(--accent); font-weight:600;"></div>
+                                <div style="font-size:0.8rem; font-weight:800; color:var(--text-sub); text-transform:uppercase;">Pièce Cible</div>
+                                <div id="room-display-final" style="font-size:1.1rem; font-weight:900; color:white;">Sélectionner une pièce</div>
+                                <div id="room-details-final" style="font-size:0.9rem; color:var(--accent); font-weight:700;"></div>
                             </div>
                             <div style="display:flex; gap:10px;">
                                 <div id="btn-delete-room" onclick="App.deleteRoom()" style="display:none; width:40px; height:40px; background:#FEE2E2; color:#DC2626; border-radius:50%; align-items:center; justify-content:center; cursor:pointer;">
@@ -514,7 +580,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         <div id="room-used-buttons" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
                     </div>
                     <div id="room-edit-mode" style="display:none; padding:15px; background:var(--bg-body); border-top:1px solid var(--border);">
-                        <label style="font-size:0.8rem; font-weight:700; color:var(--text-sub);">Nouvelle Pièce:</label>
+                        <label style="font-size:0.9rem; font-weight:800; color:var(--text-sub);">Nouvelle Pièce:</label>
                         <select id="room-select-standard" class="app-input" onchange="App.onRoomSelectChange()">
                             <option value="">-- Choisir --</option>
                             <option value="Cuisine">Cuisine</option>
@@ -530,7 +596,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                             <option value="Autre">Autre (Personnalisé)</option>
                         </select>
                         <input type="text" id="input-room-name" class="app-input" style="display:none; margin-top:10px;" placeholder="Nom de la pièce...">
-                        <label style="font-size:0.7rem; font-weight:700; margin-top:10px; display:block; color:var(--text-sub);">Dimensions</label>
+                        <label style="font-size:0.8rem; font-weight:800; margin-top:10px; display:block; color:var(--text-sub);">Dimensions</label>
                         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
                             <input type="number" id="room-dim-l" class="app-input" placeholder="L (m)" step="0.01" oninput="App.calcRoomArea()" style="margin:0;">
                             <input type="number" id="room-dim-w" class="app-input" placeholder="l (m)" step="0.01" oninput="App.calcRoomArea()" style="margin:0;">
@@ -538,25 +604,25 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         </div>
                         <div style="display:flex; gap:10px; margin-bottom:10px;">
                             <div style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px; text-align:center;">
-                                <div style="font-size:0.65rem; color:var(--text-sub); font-weight:700; text-transform:uppercase;">Sol (m²)</div>
-                                <div id="room-calc-sol" style="font-weight:800; color:white;">0</div>
+                                <div style="font-size:0.75rem; color:var(--text-sub); font-weight:800; text-transform:uppercase;">Sol (m²)</div>
+                                <div id="room-calc-sol" style="font-weight:900; color:white;">0</div>
                             </div>
                             <div style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px; text-align:center;">
-                                <div style="font-size:0.65rem; color:var(--text-sub); font-weight:700; text-transform:uppercase;">Murs (m²)</div>
-                                <div id="room-calc-murs" style="font-weight:800; color:var(--accent);">0</div>
+                                <div style="font-size:0.75rem; color:var(--text-sub); font-weight:800; text-transform:uppercase;">Murs (m²)</div>
+                                <div id="room-calc-murs" style="font-weight:900; color:var(--accent);">0</div>
                             </div>
                         </div>
-                        <label style="font-size:0.7rem; font-weight:700; margin-top:5px; display:block; color:var(--text-sub);">Détails (Option)</label>
+                        <label style="font-size:0.8rem; font-weight:800; margin-top:5px; display:block; color:var(--text-sub);">Détails (Option)</label>
                         <input type="text" id="input-room-details" class="app-input" style="margin-bottom:0;" placeholder="Es. Mur Nord, 1er Etage...">
                         <button class="btn-primary" style="margin-top:15px; height:45px;" onclick="App.confirmRoom()">CONFIRMER</button>
                     </div>
                 </div>
 
-                <div id="lib-breadcrumb" style="display:none; font-size:0.8rem; font-weight:700; color:var(--text-sub); margin-bottom:10px;">
+                <div id="lib-breadcrumb" style="display:none; font-size:0.9rem; font-weight:800; color:var(--text-sub); margin-bottom:10px;">
                     <span id="lib-bc-cat"></span> <i class="fas fa-chevron-right" style="font-size:0.7em;"></i> <span id="lib-bc-sub" style="color:var(--accent);"></span>
                 </div>
                 
-                <select id="lib-category-select" class="app-input" onchange="App.renderLibraryItems()" style="font-weight:700; color:white; height:40px; margin-bottom:0;">
+                <select id="lib-category-select" class="app-input" onchange="App.renderLibraryItems()" style="font-weight:900; color:white; height:40px; margin-bottom:0;">
                     <option value="">-- Toutes Familles --</option>
                 </select>
 
@@ -597,61 +663,61 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
         <div class="modal-body">
             <input type="hidden" id="edit-item-idx">
             
-            <label style="font-weight:700; color:var(--text-sub);">Pièce</label>
-            <select id="edit-item-piece" class="app-input" style="font-weight:700;"></select>
+            <label style="font-weight:800; color:var(--text-sub);">Pièce</label>
+            <select id="edit-item-piece" class="app-input" style="font-weight:800;"></select>
             
-            <label style="font-weight:700; display:block; margin-bottom:8px; color: var(--text-sub);">Description</label>
+            <label style="font-weight:800; display:block; margin-bottom:8px; color: var(--text-sub);">Description</label>
             <input type="text" id="edit-item-desc" class="app-input">
             
             <div style="display:flex; gap:15px; margin-bottom:15px;">
                 <div style="flex:1">
-                    <label style="font-weight:700; display:block; margin-bottom:8px; color: var(--text-sub);">Qté</label>
+                    <label style="font-weight:800; display:block; margin-bottom:8px; color: var(--text-sub);">Qté</label>
                     <div style="display:flex; align-items:center; height:50px; border:2px solid var(--border-input); border-radius:12px; overflow:hidden; background:var(--surface);">
-                        <button onclick="App.changeQty(-1)" style="width:40px; height:100%; background:var(--bg-body); border:none; font-size:1.5rem; color:white; font-weight:bold; cursor:pointer; padding:0;">-</button>
-                        <input type="number" id="edit-item-qty" style="flex:1; height:100%; width:100%; border:none; text-align:center; font-size:1.1rem; font-weight:700; color:white; outline:none; -moz-appearance:textfield; background:transparent;" oninput="App.calcEditPrice()">
-                        <button onclick="App.changeQty(1)" style="width:40px; height:100%; background:var(--bg-body); border:none; font-size:1.5rem; color:white; font-weight:bold; cursor:pointer; padding:0;">+</button>
+                        <button onclick="App.changeQty(-1)" style="width:40px; height:100%; background:var(--bg-body); border:none; font-size:1.8rem; color:white; font-weight:bold; cursor:pointer; padding:0;">-</button>
+                        <input type="number" id="edit-item-qty" style="flex:1; height:100%; width:100%; border:none; text-align:center; font-size:1.2rem; font-weight:900; color:white; outline:none; -moz-appearance:textfield; background:transparent;" oninput="App.calcEditPrice()">
+                        <button onclick="App.changeQty(1)" style="width:40px; height:100%; background:var(--bg-body); border:none; font-size:1.8rem; color:white; font-weight:bold; cursor:pointer; padding:0;">+</button>
                     </div>
                 </div>
                 <div style="flex:1">
-                    <label style="font-weight:700; display:block; margin-bottom:8px; color: var(--text-sub);">Unit.</label>
+                    <label style="font-weight:800; display:block; margin-bottom:8px; color: var(--text-sub);">Unit.</label>
                     <input type="text" id="edit-item-unit" class="app-input" disabled style="background:var(--bg-body); margin-bottom:0; color: var(--text-sub);">
                 </div>
             </div>
             
             <div style="background:var(--bg-body); padding:12px; border-radius:12px; margin-bottom:15px; border:1px dashed var(--border);">
-                 <div style="font-size:0.75rem; font-weight:700; color:var(--text-sub); text-transform:uppercase; margin-bottom:5px;">Composition du Prix</div>
+                 <div style="font-size:0.85rem; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin-bottom:5px;">Composition du Prix</div>
                  
                  <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <div style="flex:1">
-                        <label style="font-size:0.8rem; font-weight:700; color:var(--time);">Temps U. (h)</label>
+                        <label style="font-size:0.9rem; font-weight:800; color:var(--time);">Temps U. (h)</label>
                         <input type="number" id="edit-item-time" class="app-input" step="0.1" style="border-color:var(--border-input); color:var(--time);" oninput="App.calcEditPrice()">
                     </div>
                     <div style="flex:1">
-                        <label style="font-size:0.8rem; font-weight:700; color:var(--material);">Matériel U. (€)</label>
+                        <label style="font-size:0.9rem; font-weight:800; color:var(--material);">Matériel U. (€)</label>
                         <input type="number" id="edit-item-mat" class="app-input" step="0.01" style="border-color:var(--border-input); color:var(--material);" oninput="App.calcEditPrice()">
                     </div>
                  </div>
                  
-                 <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; font-weight:700; color:var(--text-sub); margin-bottom:10px; cursor:pointer; justify-content:center;">
+                 <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; font-weight:800; color:var(--text-sub); margin-bottom:10px; cursor:pointer; justify-content:center;">
                     <input type="checkbox" id="edit-item-exclude-mat" onchange="App.toggleExcludeMat()" style="width:16px; height:16px; accent-color:var(--accent);">
                     Exclure fournitures (M.O. uniquement)
                  </label>
 
-                 <div style="text-align:center; font-size:0.85rem; color:var(--text-sub); font-weight:600;" id="edit-item-split-display">
+                 <div style="text-align:center; font-size:0.95rem; color:var(--text-sub); font-weight:700;" id="edit-item-split-display">
                      Vente M.O.: 0,00€ + Vente Mat.: 0,00€
                  </div>
             </div>
 
-            <label style="font-weight:700; display:block; margin-bottom:8px; color: var(--text-sub);">Prix U. (Calculé)</label>
-            <input type="number" id="edit-item-price" class="app-input" step="0.01" style="font-weight:800; color:white;" readonly>
+            <label style="font-weight:900; display:block; margin-bottom:8px; color: var(--text-sub);">Prix U. (Calculé)</label>
+            <input type="number" id="edit-item-price" class="app-input" step="0.01" style="font-weight:900; color:white;" readonly>
             
             <div style="background:var(--bg-body); padding:15px; border-radius:12px; margin-bottom:20px; text-align:center; border:2px solid var(--border);">
-                <div style="font-size:0.7rem; color:var(--text-sub); font-weight:700; text-transform:uppercase;">(P.U. x Qté) = TOTALE RIGA</div>
-                <div id="edit-item-total-row" style="font-size:1.8rem; font-weight:900; color:var(--accent);">0,00 €</div>
+                <div style="font-size:0.8rem; color:var(--text-sub); font-weight:800; text-transform:uppercase;">(P.U. x Qté) = TOTALE RIGA</div>
+                <div id="edit-item-total-row" style="font-size:2rem; font-weight:900; color:var(--accent);">0,00 €</div>
             </div>
             
-            <label style="font-weight:700; display:block; margin-bottom:8px; color:var(--rubble);">Gravats U. (kg)</label>
-            <input type="number" id="edit-item-rubble" class="app-input" step="0.01" style="border-color:var(--border-input); color:var(--rubble); font-weight:700;">
+            <label style="font-weight:900; display:block; margin-bottom:8px; color:var(--rubble);">Gravats U. (kg)</label>
+            <input type="number" id="edit-item-rubble" class="app-input" step="0.01" style="border-color:var(--border-input); color:var(--rubble); font-weight:800;">
             
             <button id="btn-delete-item" class="btn-primary" style="background:#fee2e2; color:#dc2626; margin-top:10px;" onclick="App.deleteItem()">SUPPRIMER LIGNE</button>
         </div>
@@ -666,11 +732,11 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
             <button class="header-back-container" onclick="App.closeModal('modal-projet')">×</button>
         </div>
         <div class="modal-body">
-            <label style="font-weight:700; color: var(--text-sub);">Client</label>
+            <label style="font-weight:800; color: var(--text-sub);">Client</label>
             <select id="prj-cli" class="app-input"></select>
-            <label style="font-weight:700; color: var(--text-sub);">Nom du chantier</label>
+            <label style="font-weight:800; color: var(--text-sub);">Nom du chantier</label>
             <input type="text" id="prj-nom" class="app-input" placeholder="ex: Rénovation salle de bain">
-            <label style="font-weight:700; color: var(--text-sub);">Adresse</label>
+            <label style="font-weight:800; color: var(--text-sub);">Adresse</label>
             <input type="text" id="prj-addr" class="app-input" placeholder="Adresse du chantier">
         </div>
         <div class="modal-footer">
@@ -684,18 +750,18 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
             <button class="header-back-container" onclick="App.closeModal('modal-invoice')">×</button>
         </div>
         <div class="modal-body">
-            <label style="font-weight:700; color: var(--text-sub);">Devis source</label>
+            <label style="font-weight:800; color: var(--text-sub);">Devis source</label>
             <select id="inv-devis-select" class="app-input" onchange="App.onInvoiceDevisChange()"></select>
             <div style="background:var(--bg-body); padding:15px; border-radius:12px; margin:15px 0; border:1px solid var(--border);">
-                <div style="font-weight:700; color: var(--text-sub);">Total devis : <span id="inv-total-quote" style="color: var(--accent);">0,00 €</span></div>
+                <div style="font-weight:900; color: var(--text-sub);">Total devis : <span id="inv-total-quote" style="color: var(--accent);">0,00 €</span></div>
             </div>
             <div style="display:flex; gap:10px; margin-bottom:15px;">
                 <button id="btn-acompte" class="btn-primary" style="flex:1;" onclick="App.setInvType('acompte')">Acompte</button>
                 <button id="btn-solde" class="btn-primary" style="flex:1; background:var(--bg-body); color:var(--text-sub);" onclick="App.setInvType('solde')">Solde</button>
             </div>
-            <label style="font-weight:700; color: var(--text-sub);">Pourcentage</label>
+            <label style="font-weight:800; color: var(--text-sub);">Pourcentage</label>
             <input type="number" id="inv-percent" class="app-input" value="30" oninput="App.calcInvPreview()">
-            <div style="text-align:center; margin-top:15px; font-size:1.2rem; font-weight:800;">
+            <div style="text-align:center; margin-top:15px; font-size:1.3rem; font-weight:900;">
                 Montant : <span id="inv-preview-amount" style="color:var(--accent);">0,00 €</span>
             </div>
         </div>
@@ -710,9 +776,9 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
             <button class="header-back-container" onclick="App.closeModal('modal-agenda')">×</button>
         </div>
         <div class="modal-body">
-            <label style="font-weight:700; color: var(--text-sub);">Chantier lié</label>
+            <label style="font-weight:800; color: var(--text-sub);">Chantier lié</label>
             <select id="agd-chantier" class="app-input"></select>
-            <label style="font-weight:700; color: var(--text-sub);">Date et heure</label>
+            <label style="font-weight:800; color: var(--text-sub);">Date et heure</label>
             <input type="datetime-local" id="agd-date" class="app-input">
             <div class="section-title">Rendez-vous existants</div>
             <div id="agenda-list-view"></div>
@@ -934,14 +1000,12 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 const navClients = document.getElementById('nav-clients');
                 const navSettings = document.getElementById('nav-settings');
                 const btnGlobalM = document.getElementById('btn-global-margin');
-                const dbBlock = document.getElementById('home-dashboard-block');
                 
                 if (isCollaborateur) {
                     if (navDocs) navDocs.style.display = 'none';
                     if (navClients) navClients.style.display = 'none';
                     if (navSettings) navSettings.style.display = 'none';
                     if (btnGlobalM) btnGlobalM.style.display = 'none';
-                    if (dbBlock) dbBlock.style.display = 'none';
                     
                     document.getElementById('home-action-grid').innerHTML = `
                         <button class="big-btn btn-chantier" onclick="App.nav('projets')">
@@ -964,7 +1028,6 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     `;
                 } else {
                     if (btnGlobalM) btnGlobalM.style.display = 'flex';
-                    if (dbBlock) dbBlock.style.display = 'flex';
 
                     document.getElementById('home-action-grid').innerHTML = `
                         <button class="big-btn btn-chantier" onclick="App.nav('projets')">
@@ -1113,8 +1176,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                             proposalsHtml += `
                                 <div style="background: var(--bg-body); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
                                     <div style="flex: 1; padding-right: 10px;">
-                                        <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); line-height: 1.2; margin-bottom: 4px;">${item.desc}</div>
-                                        <div style="font-size: 0.75rem; color: var(--text-sub); font-weight: 600;">${priceFormatted} / ${item.unit}</div>
+                                        <div style="font-weight: 800; font-size: 0.95rem; color: var(--text-main); line-height: 1.2; margin-bottom: 4px;">${item.desc}</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-sub); font-weight: 700;">${priceFormatted} / ${item.unit}</div>
                                     </div>
                                     <button ${btnAction} style="background: var(--accent); color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                                         <i class="fas fa-plus"></i>
@@ -1125,13 +1188,13 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         proposalsHtml += `</div>`;
                         
                         if(!hasActiveDevis) {
-                            proposalsHtml += `<div style="font-size: 0.75rem; color: var(--danger); margin-top: 10px; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> Ouvrez un devis pour ajouter ces articles.</div>`;
+                            proposalsHtml += `<div style="font-size: 0.85rem; color: var(--danger); margin-top: 10px; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> Ouvrez un devis pour ajouter ces articles.</div>`;
                         }
                     }
 
                     chatContainer.innerHTML += `
                         <div style="background: var(--surface-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-card); max-width: 90%; align-self: flex-start; line-height: 1.4;">
-                            <div style="font-weight: 800; color: var(--accent); margin-bottom: 5px; font-size: 0.8rem;"><i class="fas fa-robot"></i> Assistant Qotia</div>
+                            <div style="font-weight: 900; color: var(--accent); margin-bottom: 5px; font-size: 0.9rem;"><i class="fas fa-robot"></i> Assistant Qotia</div>
                             <div>${aiResult.message || 'Voici mes suggestions :'}</div>
                             ${proposalsHtml}
                         </div>
@@ -1153,7 +1216,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 
                 const isCollaborateur = Auth.role === 'collaborateur' || Auth.role === 'ouvrier';
 
-                // Active Projects List
+                // Active Projects List - MODIFICATION 2 (Cartes carrées)
                 const projContainer = document.getElementById('home-active-projects-list'); 
                 projContainer.innerHTML = ''; 
 
@@ -1175,137 +1238,55 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         let perc = totalCA > 0 ? Math.round((acceptedCA / totalCA) * 100) : 0;
 
                         const card = document.createElement('div');
-                        card.className = 'dashboard-card';
-                        card.style.minWidth = '260px';
+                        card.className = 'dashboard-card project-card-square';
                         card.onclick = () => App.openHub(c.id);
                         card.innerHTML = `
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
-                                    <div style="font-weight:800; font-size:1.1rem; color:white; margin-bottom:2px;">${c.name}</div>
-                                    <div style="font-size:0.8rem; color:var(--text-sub);">${cli ? cli.nom : 'Inconnu'}</div>
+                            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; width:100%; height:100%;">
+                                <div style="font-weight:900; font-size:0.95rem; color:white; margin-bottom:2px; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.name}</div>
+                                <div style="font-size:0.75rem; color:var(--text-sub);">${cli ? cli.nom : 'Inconnu'}</div>
+                                <div style="background: var(--primary); color: white; padding: 2px 10px; border-radius: 12px; font-weight: 900; font-size: 1rem; margin-top: 4px;">${perc}%</div>
+                                <div style="width: 100%; background: #333; height: 6px; border-radius: 10px; margin-top: 6px; overflow:hidden;">
+                                    <div style="width: ${perc}%; background: var(--accent); height: 100%; border-radius: 10px;"></div>
                                 </div>
-                                <div style="background: var(--primary); color: white; padding: 2px 10px; border-radius: 12px; font-weight: 800; font-size: 0.9rem;">${perc}%</div>
-                            </div>
-                            <div style="width: 100%; background: #333; height: 6px; border-radius: 10px; margin-top: 8px; overflow:hidden;">
-                                <div style="width: ${perc}%; background: var(--accent); height: 100%; border-radius: 10px;"></div>
                             </div>
                         `;
                         projContainer.appendChild(card);
                     });
                 }
 
-                // Pending Invoices List
+                // Pending Invoices List - MODIFICATION 3 & 4 (Scroll interne & Jaune/Rouge)
                 const invContainer = document.getElementById('home-invoices-list');
                 invContainer.innerHTML = '';
                 let hasInvoices = false;
+                
+                let htmlInvoices = `<div id="home-invoices-wrapper">`;
                 Store.data.chantiers.forEach(c => {
                     (c.factures || []).forEach(f => {
                         const cli = Store.data.clients.find(x=>x.id==c.clientId);
                         hasInvoices = true;
-                        invContainer.innerHTML += `
-                            <div class="card-item" style="border-left:4px solid var(--accent);" onclick="App.openHub(${c.id})">
+                        
+                        // Gestion des couleurs (Jaune pour en attente, Rouge pour échéance dépassée)
+                        const isOverdue = f.dueDate && new Date(f.dueDate) < new Date();
+                        const colorClass = isOverdue ? 'invoice-expired' : 'invoice-pending';
+                        const textColor = isOverdue ? 'var(--danger)' : 'var(--accent)';
+
+                        htmlInvoices += `
+                            <div class="card-item ${colorClass}" onclick="App.openHub(${c.id})">
                                 <div class="card-info">
                                     <div class="card-title">${f.ref}</div>
                                     <div class="card-sub">${cli ? cli.nom : '-'}</div>
                                 </div>
-                                <div style="font-weight:800; color:var(--accent);">${App.formatMoney(f.amount)}</div>
+                                <div style="font-weight:900; color:${textColor};">${App.formatMoney(f.amount)}</div>
                             </div>
                         `;
                     });
                 });
+                htmlInvoices += `</div>`;
+                
                 if(!hasInvoices) {
                     invContainer.innerHTML = '<div style="color:var(--text-sub); font-size:0.9rem; padding:10px;">Aucune facture en attente de paiement.</div>';
-                }
-
-                if (!isCollaborateur) {
-                    const rateSell = Store.data.settings.hourlyRate || 45;
-                    const rateCost = Store.data.settings.laborCost || 25;
-                    
-                    let monthlyData = {
-                        '01': {rev:0, margin:0}, '02': {rev:0, margin:0}, '03': {rev:0, margin:0},
-                        '04': {rev:0, margin:0}, '05': {rev:0, margin:0}, '06': {rev:0, margin:0},
-                        '07': {rev:0, margin:0}, '08': {rev:0, margin:0}, '09': {rev:0, margin:0},
-                        '10': {rev:0, margin:0}, '11': {rev:0, margin:0}, '12': {rev:0, margin:0}
-                    };
-                    
-                    let activeChantiersData = [];
-
-                    Store.data.chantiers.forEach(c => {
-                        let cRevenue = 0;
-                        let cMargin = 0;
-                        let hasAccepted = false;
-
-                        if(c.devisList) {
-                            c.devisList.forEach(d => {
-                                if(d.status === 'Accepté') {
-                                    hasAccepted = true;
-                                    let dRev = 0;
-                                    let dMargin = 0;
-                                    
-                                    (d.items || []).forEach(i => {
-                                        const sMO = (i.time || 0) * rateSell * i.qty;
-                                        const cMO = (i.time || 0) * rateCost * i.qty;
-                                        const cMat = (i.material_cost || 0) * i.qty;
-                                        const sMat = (i.price * i.qty) - sMO;
-                                        
-                                        dRev += (i.price * i.qty);
-                                        dMargin += ((sMO - cMO) + (sMat - cMat));
-                                    });
-
-                                    cRevenue += dRev;
-                                    cMargin += dMargin;
-
-                                    if(d.signDate) {
-                                        const parts = d.signDate.split('/');
-                                        if(parts.length >= 2) {
-                                            const month = parts[1].padStart(2, '0');
-                                            if(monthlyData[month]) {
-                                                monthlyData[month].rev += dRev;
-                                                monthlyData[month].margin += dMargin;
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        }
-
-                        if(hasAccepted && cRevenue > 0) {
-                            activeChantiersData.push({
-                                id: c.id,
-                                name: c.name,
-                                rev: cRevenue,
-                                margin: cMargin,
-                                perc: ((cMargin / cRevenue) * 100).toFixed(1)
-                            });
-                        }
-                    });
-
-                    if(typeof Chart !== 'undefined') {
-                        const ctxElem = document.getElementById('chart-global-rentabilite');
-                        if(ctxElem) {
-                            if(App.state.globalChart) App.state.globalChart.destroy();
-                            
-                            const labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-                            const revData = Object.values(monthlyData).map(d => d.rev);
-                            const marginData = Object.values(monthlyData).map(d => d.margin);
-
-                            App.state.globalChart = new Chart(ctxElem.getContext('2d'), {
-                                type: 'bar',
-                                data: {
-                                    labels: labels,
-                                    datasets: [
-                                        { label: 'C.A. (€)', data: revData, backgroundColor: '#3B82F6', borderRadius: 4 },
-                                        { label: 'Marge (€)', data: marginData, backgroundColor: '#10B981', borderRadius: 4 }
-                                    ]
-                                },
-                                options: {
-                                    responsive: true,
-                                    scales: { y: { beginAtZero: true } },
-                                    plugins: { legend: { position: 'bottom' } }
-                                }
-                            });
-                        }
-                    }
+                } else {
+                    invContainer.innerHTML = htmlInvoices;
                 }
             },
 
@@ -1330,9 +1311,9 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                     <div class="card-sub">${addr || '-'}</div>
                                 </div>
                                 <div style="display: flex; gap: 12px; align-items: center;">
-                                    ${tel ? `<a href="${telLink}" style="color: var(--accent); font-size: 1.2rem;" onclick="event.stopPropagation()"><i class="fas fa-phone"></i></a>` : ''}
-                                    ${email ? `<a href="${mailLink}" style="color: var(--accent); font-size: 1.2rem;" onclick="event.stopPropagation()"><i class="fas fa-envelope"></i></a>` : ''}
-                                    ${addr ? `<a href="${mapsLink}" target="_blank" style="color: var(--accent); font-size: 1.2rem;" onclick="event.stopPropagation()"><i class="fas fa-map-marker-alt"></i></a>` : ''}
+                                    ${tel ? `<a href="${telLink}" style="color: var(--accent); font-size: 1.4rem;" onclick="event.stopPropagation()"><i class="fas fa-phone"></i></a>` : ''}
+                                    ${email ? `<a href="${mailLink}" style="color: var(--accent); font-size: 1.4rem;" onclick="event.stopPropagation()"><i class="fas fa-envelope"></i></a>` : ''}
+                                    ${addr ? `<a href="${mapsLink}" target="_blank" style="color: var(--accent); font-size: 1.4rem;" onclick="event.stopPropagation()"><i class="fas fa-map-marker-alt"></i></a>` : ''}
                                 </div>
                             </div>
                         `;
@@ -1371,7 +1352,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     }
                     
                     let cPerc = cRevenue > 0 ? ((cMargin / cRevenue) * 100).toFixed(1) : 0;
-                    let marginBadge = !isCollaborateur ? `<div style="margin-top:8px; font-size:0.8rem; color:var(--success); font-weight:700;"><i class="fas fa-chart-line"></i> Marge: ${App.formatMoney(cMargin)} (${cPerc}%)</div>` : '';
+                    let marginBadge = !isCollaborateur ? `<div style="margin-top:8px; font-size:0.9rem; color:var(--success); font-weight:800;"><i class="fas fa-chart-line"></i> Marge: ${App.formatMoney(cMargin)} (${cPerc}%)</div>` : '';
 
                     l.innerHTML += `
                         <div class="card-item" style="border-left:4px solid var(--primary); background:var(--surface-card);" onclick="App.openHub(${c.id})">
@@ -1401,17 +1382,17 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     
                     <div class="card-item" onclick="App.editSetting('hourlyRate', 'Prix de vente M.O. (€/h)')">
                         <div class="card-info"><div class="card-title">Vente M.O.</div><div class="card-sub">Prix facturé au client</div></div>
-                        <div style="font-size:1.2rem; font-weight:800; color:var(--accent);">${Store.data.settings.hourlyRate} €/h</div>
+                        <div style="font-size:1.3rem; font-weight:900; color:var(--accent);">${Store.data.settings.hourlyRate} €/h</div>
                     </div>
                     
                     <div class="card-item" onclick="App.editSetting('laborCost', 'Coût d\\'achat M.O. (€/h)')">
                         <div class="card-info"><div class="card-title">Coût M.O.</div><div class="card-sub">Coût réel pour l'entreprise</div></div>
-                        <div style="font-size:1.2rem; font-weight:800; color:var(--danger);">${Store.data.settings.laborCost} €/h</div>
+                        <div style="font-size:1.3rem; font-weight:900; color:var(--danger);">${Store.data.settings.laborCost} €/h</div>
                     </div>
                     
                     <div class="card-item" onclick="App.editSetting('materialMarkup', 'Marge sur Matériel (%)')">
                         <div class="card-info"><div class="card-title">Marge Matériel</div><div class="card-sub">% aggiunto al costo d'acquisto</div></div>
-                        <div style="font-size:1.2rem; font-weight:800; color:var(--success);">${Store.data.settings.materialMarkup} %</div>
+                        <div style="font-size:1.3rem; font-weight:900; color:var(--success);">${Store.data.settings.materialMarkup} %</div>
                     </div>
                     
                     <div class="section-title" style="margin-top:20px;">Partenaires</div>
@@ -1433,7 +1414,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 logoutBtn.className = 'card-item'; 
                 logoutBtn.style.borderColor = '#EF4444'; 
                 logoutBtn.style.marginTop = '30px';
-                logoutBtn.innerHTML = `<div><b style="color:#EF4444">LOGOUT</b></div><i class="fas fa-sign-out-alt" style="color:#EF4444"></i>`;
+                logoutBtn.innerHTML = `<div><b style="color:#EF4444; font-size:1.1rem;">LOGOUT</b></div><i class="fas fa-sign-out-alt" style="color:#EF4444; font-size:1.5rem;"></i>`;
                 logoutBtn.onclick = Auth.logout;
                 l.appendChild(logoutBtn);
             },
@@ -1484,13 +1465,13 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         const isSigned = d.status === "Accepté";
                         
                         const signIcon = isSigned 
-                            ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:1.2rem; padding:10px;"></i>` 
-                            : `<i class="fas fa-pen-nib" style="color:var(--text-sub); font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.promptSignature(${d.id})"></i>`;
+                            ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:1.4rem; padding:10px;"></i>` 
+                            : `<i class="fas fa-pen-nib" style="color:var(--text-sub); font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.promptSignature(${d.id})"></i>`;
 
                         const actionIcons = isSigned
-                            ? `<i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('devis', ${d.id})"></i>`
-                            : `<i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('devis', ${d.id})"></i>
-                               <i class="fas fa-trash" style="color:var(--text-sub); font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteDevis(${d.id})"></i>
+                            ? `<i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.6rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('devis', ${d.id})"></i>`
+                            : `<i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.6rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('devis', ${d.id})"></i>
+                               <i class="fas fa-trash" style="color:var(--text-sub); font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteDevis(${d.id})"></i>
                                <i class="fas fa-pen" style="color:var(--text-sub); margin-left:10px;" onclick="App.openEditor(${d.id})"></i>`;
 
                         ld.innerHTML += `
@@ -1518,8 +1499,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                     <div class="card-title">${doc.name}</div>
                                     <div class="card-sub">${doc.ref}</div>
                                 </div>
-                                <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateCDCPDF('${doc.id}')"></i>
-                                <i class="fas fa-trash" style="color:var(--text-sub); font-size:1.2rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteCDC('${doc.id}')"></i>
+                                <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.6rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateCDCPDF('${doc.id}')"></i>
+                                <i class="fas fa-trash" style="color:var(--text-sub); font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.deleteCDC('${doc.id}')"></i>
                             </div>
                         `;
                     });
@@ -1536,13 +1517,88 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                     <div class="card-title">${f.ref}</div>
                                     <div class="card-sub">${App.formatMoney(f.amount)}</div>
                                 </div>
-                                <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('facture', ${f.id})"></i>
+                                <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.6rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('facture', ${f.id})"></i>
                             </div>
                         `; 
                     });
                 }
                 
                 this.nav('hub');
+            },
+
+            // 6. NOUVELLES FONCTIONS DE NAVIGATION POUR LES SOUS-VUES DE CHANTIER
+            openHubSubview(type) {
+                document.querySelector('#view-hub .scroll-content').style.display = 'none';
+                const subview = document.getElementById('hub-' + type + '-subview');
+                if(subview) {
+                    subview.style.display = 'flex';
+                    if(type === 'devis') this.renderHubDevisList();
+                    if(type === 'cdc') this.renderHubCdcList();
+                    if(type === 'facture') this.renderHubFactureList();
+                }
+            },
+            closeHubSubview() {
+                document.querySelector('#view-hub .scroll-content').style.display = 'block';
+                document.querySelectorAll('#view-hub .hub-sub-view').forEach(el => el.style.display = 'none');
+            },
+            renderHubDevisList() {
+                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+                if(!c) return;
+                const container = document.getElementById('hub-devis-list-full');
+                container.innerHTML = '';
+                (c.devisList || []).forEach(d => {
+                    container.innerHTML += `
+                        <div class="card-item" style="border-left:4px solid var(--col-devis); background:var(--bg-devis);" onclick="App.openEditor(${d.id})">
+                            <div class="card-info">
+                                <div class="card-title">${d.name}</div>
+                                <div class="card-sub">${App.formatMoney(d.total)}</div>
+                            </div>
+                            <div>
+                                <i class="fas fa-pen" style="color:var(--text-sub); font-size:1.4rem; margin-right:10px; cursor:pointer;" onclick="event.stopPropagation(); App.openEditor(${d.id})"></i>
+                                <i class="fas fa-trash" style="color:var(--text-sub); font-size:1.4rem; cursor:pointer;" onclick="event.stopPropagation(); App.deleteDevis(${d.id})"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+            },
+            renderHubCdcList() {
+                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+                if(!c) return;
+                const container = document.getElementById('hub-cdc-list-full');
+                container.innerHTML = '';
+                (c.extraDocs || []).forEach(doc => {
+                    container.innerHTML += `
+                        <div class="card-item" style="border-left:4px solid var(--col-cdc); background:var(--bg-cdc);" onclick="App.viewCahierTable(doc)">
+                            <div class="card-info">
+                                <div class="card-title">${doc.name}</div>
+                                <div class="card-sub">${doc.ref}</div>
+                            </div>
+                            <div>
+                                <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.6rem; margin-right:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateCDCPDF('${doc.id}')"></i>
+                                <i class="fas fa-trash" style="color:var(--text-sub); font-size:1.4rem; cursor:pointer;" onclick="event.stopPropagation(); App.deleteCDC('${doc.id}')"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+            },
+            renderHubFactureList() {
+                const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+                if(!c) return;
+                const container = document.getElementById('hub-facture-list-full');
+                container.innerHTML = '';
+                (c.factures || []).forEach(f => {
+                    container.innerHTML += `
+                        <div class="card-item" style="border-left:4px solid var(--col-facture); background:var(--bg-facture);">
+                            <div class="card-info">
+                                <div class="card-title">${f.ref}</div>
+                                <div class="card-sub">${App.formatMoney(f.amount)}</div>
+                            </div>
+                            <div>
+                                <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.6rem; margin-right:10px; cursor:pointer;" onclick="event.stopPropagation(); App.generateGlobalPDF('facture', ${f.id})"></i>
+                            </div>
+                        </div>
+                    `;
+                });
             },
 
             generateMarginPDF() { 
@@ -1593,7 +1649,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     const margeMat = data.sellMat - data.costMat;
                     rows += `
                         <tr style="border-bottom: 1px solid #333;">
-                            <td style="padding:10px; font-weight:700; color:white;">${cat}</td>
+                            <td style="padding:10px; font-weight:900; color:white;">${cat}</td>
                             <td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(data.costMO)}</td>
                             <td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(data.costMat)}</td>
                             <td style="padding:10px; text-align:right; color:#10B981;">${App.formatMoney(margeMO)}</td>
@@ -1610,7 +1666,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         <h2 style="color:#FFC033; margin-bottom:5px;">ANALYSE DE MARGE - CHANTIER</h2>
                         <div style="margin-bottom: 20px; color: #9CA3AF;">Projet: <strong style="color:#F3F4F6;">${c.name}</strong> | Généré le: ${new Date().toLocaleDateString()}</div>
                         
-                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:30px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.9rem; margin-bottom:30px;">
                             <thead style="background:#1C3666; color:white;">
                                 <tr>
                                     <th style="padding:10px; text-align:left;">Famille / Ouvrage</th>
@@ -1626,8 +1682,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
 
                         <div style="display:flex; justify-content:flex-end;">
                             <div style="background:#064E3B; border:1px solid #10B981; padding:15px; border-radius:10px; text-align:right; width:300px;">
-                                <div style="font-size:0.85rem; color:#10B981; font-weight:700;">MARGE TOTALE CHANTIER</div>
-                                <div style="font-size:1.8rem; font-weight:900; color:#10B981;">${App.formatMoney(grandTotalMarge)} <span style="font-size:1rem;">(${perc}%)</span></div>
+                                <div style="font-size:0.9rem; color:#10B981; font-weight:800;">MARGE TOTALE CHANTIER</div>
+                                <div style="font-size:2rem; font-weight:900; color:#10B981;">${App.formatMoney(grandTotalMarge)} <span style="font-size:1.2rem;">(${perc}%)</span></div>
                             </div>
                         </div>
                     </div>
@@ -1678,7 +1734,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         
                         rows += `
                             <tr style="border-bottom: 1px solid #333;">
-                                <td style="padding:10px; font-weight:700; color:white;">${c.name}</td>
+                                <td style="padding:10px; font-weight:900; color:white;">${c.name}</td>
                                 <td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(cRevenue)}</td>
                                 <td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(cCostMO)}</td>
                                 <td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(cCostMat)}</td>
@@ -1698,7 +1754,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         <h2 style="color:#FFC033; margin-bottom:5px;">ANALYSE GLOBALE DES MARGES</h2>
                         <div style="margin-bottom: 20px; color: #9CA3AF;">Généré le: ${new Date().toLocaleDateString()}</div>
                         
-                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:30px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.9rem; margin-bottom:30px;">
                             <thead style="background:#1C3666; color:white;">
                                 <tr>
                                     <th style="padding:10px; text-align:left;">Chantier</th>
@@ -1714,8 +1770,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
 
                         <div style="display:flex; justify-content:flex-end;">
                             <div style="background:#064E3B; border:1px solid #10B981; padding:15px; border-radius:10px; text-align:right; width:350px;">
-                                <div style="font-size:0.85rem; color:#10B981; font-weight:700;">MARGE GLOBALE (TOUS CHANTIERS)</div>
-                                <div style="font-size:1.8rem; font-weight:900; color:#10B981;">${App.formatMoney(grandTotalMarge)} <span style="font-size:1.2rem;">(${grandPerc}%)</span></div>
+                                <div style="font-size:0.9rem; color:#10B981; font-weight:800;">MARGE GLOBALE (TOUS CHANTIERS)</div>
+                                <div style="font-size:2rem; font-weight:900; color:#10B981;">${App.formatMoney(grandTotalMarge)} <span style="font-size:1.2rem;">(${grandPerc}%)</span></div>
                             </div>
                         </div>
                     </div>
@@ -1932,7 +1988,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 l.innerHTML=''; 
                 
                 if(!d || !d.items || d.items.length === 0) { 
-                    l.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub);">Vide</div>'; 
+                    l.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub); font-size:1rem;">Vide</div>'; 
                     return; 
                 }
 
@@ -1948,7 +2004,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     });
                     
                     for(const [piece, items] of Object.entries(grouped)) {
-                        let html = `<div class="piece-section"><div class="piece-header" style="border-left: 4px solid var(--accent);"><div class="piece-title"><i class="fas fa-door-open" style="color:var(--accent);"></i> ${piece}</div><span style="font-size:0.8rem; font-weight:700; color:var(--text-sub);">${items.length}</span></div>`;
+                        let html = `<div class="piece-section"><div class="piece-header" style="border-left: 4px solid var(--accent);"><div class="piece-title"><i class="fas fa-door-open" style="color:var(--accent);"></i> ${piece}</div><span style="font-size:0.9rem; font-weight:800; color:var(--text-sub);">${items.length}</span></div>`;
                         
                         items.forEach(i => {
                             let rowP = i.qty * i.price;
@@ -1959,7 +2015,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                 <div class="e-card" style="background:var(--bg-devis); border-left-color:var(--accent);" onclick="App.editDevisItem(${i.id})">
                                     <div class="e-card-row">
                                         <div class="e-desc">${i.desc}</div>
-                                        <div style="font-weight:800; color:var(--accent);">${App.formatMoney(rowP)}</div>
+                                        <div style="font-weight:900; color:var(--accent); font-size:1.1rem;">${App.formatMoney(rowP)}</div>
                                     </div>
                                     <div class="e-stats">
                                         <div class="stat-box"><div class="stat-lbl">Qté</div><div class="stat-val">${i.qty}</div></div>
@@ -1967,9 +2023,9 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                         <div class="stat-box"><div class="stat-lbl">Temps</div><div class="stat-val time">${i.time||0}h</div></div>
                                     </div>
                                     <div class="e-stats" style="border-top:1px dashed #333; margin-top:5px;">
-                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--time)">M.O. (€)</div><div class="stat-val" style="color:var(--time); font-size:0.8rem;">${App.formatMoney(laborCostTotal)}</div></div>
-                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--material)">Mat. (€)</div><div class="stat-val" style="color:var(--material); font-size:0.8rem;">${App.formatMoney(matCostTotal)}</div></div>
-                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--rubble)">Gravats</div><div class="stat-val" style="color:var(--rubble); font-size:0.8rem;">${(i.gravats*i.qty).toFixed(2)} kg</div></div>
+                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--time)">M.O. (€)</div><div class="stat-val" style="color:var(--time); font-size:0.9rem;">${App.formatMoney(laborCostTotal)}</div></div>
+                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--material)">Mat. (€)</div><div class="stat-val" style="color:var(--material); font-size:0.9rem;">${App.formatMoney(matCostTotal)}</div></div>
+                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--rubble)">Gravats</div><div class="stat-val" style="color:var(--rubble); font-size:0.9rem;">${(i.gravats*i.qty).toFixed(2)} kg</div></div>
                                     </div>
                                 </div>
                             `;
@@ -2034,8 +2090,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                 <div class="piece-header" style="background:var(--surface); border-left: 4px solid var(--accent);">
                                     <div class="piece-title"><i class="fas fa-layer-group" style="color:var(--accent);"></i> ${cat}</div>
                                     <span style="text-align:right;">
-                                        <div style="font-weight:900; color:var(--accent);">${App.formatMoney(familyData.total)}</div>
-                                        <div style="font-size:0.75rem; color:#10B981; font-weight:700;">Marge: ${App.formatMoney(familyData.totalMargin)} (${perc}%)</div>
+                                        <div style="font-weight:900; color:var(--accent); font-size:1.1rem;">${App.formatMoney(familyData.total)}</div>
+                                        <div style="font-size:0.85rem; color:#10B981; font-weight:800;">Marge: ${App.formatMoney(familyData.totalMargin)} (${perc}%)</div>
                                     </span>
                                 </div>
                         `;
@@ -2048,15 +2104,15 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                 <div class="e-card" style="background:var(--bg-devis); border-left-color:var(--accent);">
                                     <div class="e-card-row">
                                         <div class="e-desc">${agg.desc}<br><span class="e-loc-tag">${locs}</span></div>
-                                        <div style="font-weight:800; color:var(--accent);">${App.formatMoney(totalP)}</div>
+                                        <div style="font-weight:900; color:var(--accent); font-size:1.1rem;">${App.formatMoney(totalP)}</div>
                                     </div>
                                     <div class="e-stats">
                                         <div class="stat-box"><div class="stat-lbl">Tot Qté</div><div class="stat-val">${agg.totalQty}</div></div>
                                         <div class="stat-box"><div class="stat-lbl">Tot Time</div><div class="stat-val time">${agg.totalTime.toFixed(1)}h</div></div>
                                     </div>
                                     <div class="e-stats" style="border-top:1px dashed #333; margin-top:5px;">
-                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--time)">Tot Vente M.O.</div><div class="stat-val" style="color:var(--time); font-size:0.8rem;">${App.formatMoney(agg.totalSellMO)}</div></div>
-                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--material)">Tot Vente Mat.</div><div class="stat-val" style="color:var(--material); font-size:0.8rem;">${App.formatMoney(agg.totalSellMat)}</div></div>
+                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--time)">Tot Vente M.O.</div><div class="stat-val" style="color:var(--time); font-size:0.9rem;">${App.formatMoney(agg.totalSellMO)}</div></div>
+                                        <div class="stat-box"><div class="stat-lbl" style="color:var(--material)">Tot Vente Mat.</div><div class="stat-val" style="color:var(--material); font-size:0.9rem;">${App.formatMoney(agg.totalSellMat)}</div></div>
                                     </div>
                                 </div>
                             `;
@@ -2122,7 +2178,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 }
 
                 if(usedRooms.size === 0) {
-                    container.innerHTML = '<span style="font-size:0.7rem; color:var(--text-sub);">Aucune pièce créée. Cliquez sur +</span>';
+                    container.innerHTML = '<span style="font-size:0.85rem; color:var(--text-sub);">Aucune pièce créée. Cliquez sur +</span>';
                     return;
                 }
 
@@ -2246,7 +2302,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     if (typeof Fuse === 'undefined') return; 
                     const results = Config.searchIndex.search(searchTerm);
                     if(results.length === 0) {
-                        cont.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-sub);">Nessun risultato per "${searchTerm}"</div>`;
+                        cont.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-sub); font-size:1.1rem;">Nessun risultato per "${searchTerm}"</div>`;
                         return;
                     }
                     const finalResults = selectedCat ? results.filter(r => r.item.category === selectedCat) : results;
@@ -2262,8 +2318,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     categories.forEach(cat => {
                         let btn = document.createElement('div');
                         btn.style.cssText = "background:var(--surface-card); border:1px solid var(--border); border-radius:12px; padding:20px 10px; text-align:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;";
-                        let icon = '<i class="fas fa-folder" style="font-size:1.5rem; color:var(--accent);"></i>';
-                        btn.innerHTML = `${icon}<div style="font-weight:700; color:white; font-size:0.9rem; word-break:break-word;">${cat}</div>`;
+                        let icon = '<i class="fas fa-folder" style="font-size:1.8rem; color:var(--accent);"></i>';
+                        btn.innerHTML = `${icon}<div style="font-weight:900; color:white; font-size:1.1rem; word-break:break-word;">${cat}</div>`;
                         btn.onclick = () => { App.state.libCategory = cat; document.getElementById('lib-category-select').value = cat; App.renderLibraryItems(); };
                         grid.appendChild(btn);
                     });
@@ -2278,7 +2334,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     document.getElementById('lib-bc-sub').innerText = '';
                     let backBtn = document.createElement('div');
                     backBtn.innerHTML = `<i class="fas fa-arrow-left"></i> Indietro`;
-                    backBtn.style.cssText = "padding:10px; color:var(--accent); font-weight:700; cursor:pointer; margin-bottom:10px; display:inline-block;";
+                    backBtn.style.cssText = "padding:10px; color:var(--accent); font-weight:900; cursor:pointer; margin-bottom:10px; display:inline-block; font-size:1rem;";
                     backBtn.onclick = () => { App.state.libCategory = null; document.getElementById('lib-category-select').value = ""; App.renderLibraryItems(); };
                     cont.appendChild(backBtn);
                     const allItemsInCat = Config.LIB[activeCat];
@@ -2287,7 +2343,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     grid.style.cssText = "display:grid; grid-template-columns: 1fr 1fr; gap:12px;";
                     subCats.forEach(sub => {
                         let btn = document.createElement('div');
-                        btn.style.cssText = "background:var(--surface-card); border:1px solid var(--border); border-radius:12px; padding:15px 10px; text-align:center; cursor:pointer; font-weight:600; color:var(--text-main);";
+                        btn.style.cssText = "background:var(--surface-card); border:1px solid var(--border); border-radius:12px; padding:15px 10px; text-align:center; cursor:pointer; font-weight:800; color:var(--text-main); font-size:1rem;";
                         btn.innerText = sub;
                         btn.onclick = () => { App.state.libSubCategory = sub; App.renderLibraryItems(); };
                         grid.appendChild(btn);
@@ -2302,7 +2358,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     document.getElementById('lib-bc-sub').innerText = App.state.libSubCategory;
                     let backBtn = document.createElement('div');
                     backBtn.innerHTML = `<i class="fas fa-arrow-left"></i> Indietro`;
-                    backBtn.style.cssText = "padding:10px; color:var(--accent); font-weight:700; cursor:pointer; margin-bottom:10px; display:inline-block;";
+                    backBtn.style.cssText = "padding:10px; color:var(--accent); font-weight:900; cursor:pointer; margin-bottom:10px; display:inline-block; font-size:1rem;";
                     backBtn.onclick = () => { App.state.libSubCategory = null; App.renderLibraryItems(); };
                     cont.appendChild(backBtn);
                     const finalItems = Config.LIB[activeCat].filter(i => i.sub_category === App.state.libSubCategory);
@@ -2323,16 +2379,16 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     
                     div.innerHTML = `
                         <div class="card-info">
-                            <div class="card-title" style="font-size:0.95rem; color:white;">${it.desc}</div>
-                            <div class="card-sub" style="color:var(--accent); font-weight:700;">
+                            <div class="card-title" style="font-size:1.1rem; color:white;">${it.desc}</div>
+                            <div class="card-sub" style="color:var(--accent); font-weight:900;">
                                 ${App.formatMoney(dynamicPrice)} / ${it.unit} 
-                                <span style="font-weight:400; color:var(--text-sub); font-size:0.8em; margin-left:5px;">
+                                <span style="font-weight:700; color:var(--text-sub); font-size:0.9em; margin-left:5px;">
                                     (T: ${it.labor_time}h | M: ${it.material_cost}€)
                                 </span>
                             </div>
                         </div>
                         <div style="background:var(--accent); color:var(--primary); width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                            <i class="fas fa-plus" style="font-size:0.9rem; pointer-events:none;"></i>
+                            <i class="fas fa-plus" style="font-size:1.1rem; pointer-events:none;"></i>
                         </div>
                     `; 
                     
@@ -2816,9 +2872,9 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     if(obj.signedByEmail) { 
                         signatureBlock = `<div style="margin-top:40px; margin-bottom:20px; border:2px solid #10B981; padding:15px; border-radius:10px; page-break-inside: avoid; break-inside: avoid; text-align:center;"><div style="font-weight:bold; color:#10B981; font-size:1.2rem; margin-bottom:10px;">BON POUR ACCORD</div><div style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;">SIGNÉ PAR MAIL</div><div style="font-size:0.9rem;">le ${obj.signDate}</div></div>`; 
                     } else if(obj.signature) { 
-                        signatureBlock = `<div style="margin-top:40px; margin-bottom:20px; border:2px solid #10B981; padding:15px; border-radius:10px; page-break-inside: avoid; break-inside: avoid; text-align:center;"><div style="font-weight:bold; color:#10B981; margin-bottom:10px;">BON POUR ACCORD</div><div style="font-size:0.8rem; margin-bottom:10px;">Signé électroniquement le ${obj.signDate || ''}</div><img src="${obj.signature}" style="max-width: 250px; max-height: 100px; width: auto; height: auto; display:block; margin:0 auto;" /></div>`; 
+                        signatureBlock = `<div style="margin-top:40px; margin-bottom:20px; border:2px solid #10B981; padding:15px; border-radius:10px; page-break-inside: avoid; break-inside: avoid; text-align:center;"><div style="font-weight:bold; color:#10B981; margin-bottom:10px;">BON POUR ACCORD</div><div style="font-size:0.9rem; margin-bottom:10px;">Signé électroniquement le ${obj.signDate || ''}</div><img src="${obj.signature}" style="max-width: 250px; max-height: 100px; width: auto; height: auto; display:block; margin:0 auto;" /></div>`; 
                     } else { 
-                        signatureBlock = `<div style="margin-top:50px; margin-bottom:20px; display:flex; justify-content:space-between; page-break-inside: avoid; break-inside: avoid;"><div style="border-top:1px solid #fff; width:40%; padding-top:10px; font-size:0.8rem; color:#9CA3AF;">Date et Signature Entreprise</div><div style="border-top:1px solid #fff; width:40%; padding-top:10px; font-size:0.8rem; color:#9CA3AF;">Date et Signature Client (Bon pour accord)</div></div>`; 
+                        signatureBlock = `<div style="margin-top:50px; margin-bottom:20px; display:flex; justify-content:space-between; page-break-inside: avoid; break-inside: avoid;"><div style="border-top:1px solid #fff; width:40%; padding-top:10px; font-size:0.9rem; color:#9CA3AF;">Date et Signature Entreprise</div><div style="border-top:1px solid #fff; width:40%; padding-top:10px; font-size:0.9rem; color:#9CA3AF;">Date et Signature Client (Bon pour accord)</div></div>`; 
                     }
                 } else {
                     const obj = c.factures.find(x=>x.id==id); 
@@ -2837,7 +2893,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                         const sellMat = rowT - sellLabor; 
                         totalLaborPDF += sellLabor; 
                         totalMatPDF += sellMat; 
-                        return `<tr style="border-bottom:1px solid #333;"><td style="padding:10px; color:white;">${i.desc}</td><td style="padding:10px; text-align:center; color:#9CA3AF;">${i.qty}</td><td style="padding:10px; text-align:center; font-size:0.85rem; color:#9CA3AF;">${sellLabor > 0 ? App.formatMoney(sellLabor) : '-'}</td><td style="padding:10px; text-align:center; font-size:0.85rem; color:#9CA3AF;">${sellMat > 0 ? App.formatMoney(sellMat) : '-'}</td><td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(i.price)}</td><td style="padding:10px; text-align:right; font-weight:bold; color:white;">${App.formatMoney(rowT)}</td></tr>`; 
+                        return `<tr style="border-bottom:1px solid #333;"><td style="padding:10px; color:white; font-weight:700;">${i.desc}</td><td style="padding:10px; text-align:center; color:#9CA3AF;">${i.qty}</td><td style="padding:10px; text-align:center; font-size:0.9rem; color:#9CA3AF;">${sellLabor > 0 ? App.formatMoney(sellLabor) : '-'}</td><td style="padding:10px; text-align:center; font-size:0.9rem; color:#9CA3AF;">${sellMat > 0 ? App.formatMoney(sellMat) : '-'}</td><td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(i.price)}</td><td style="padding:10px; text-align:right; font-weight:bold; color:white;">${App.formatMoney(rowT)}</td></tr>`; 
                     }).join('');
                 } else {
                     let grouped = {};
@@ -2899,17 +2955,17 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     }
                     
                     for (const [groupName, groupData] of Object.entries(grouped)) {
-                        rowsHtml += `<tr style="background:#1C3666;"><td colspan="6" style="padding:10px; font-weight:800; color:white;">${mode === "2" ? '<i class="fas fa-layer-group"></i> ' : '<i class="fas fa-door-open"></i> '} ${groupName}</td></tr>`;
+                        rowsHtml += `<tr style="background:#1C3666;"><td colspan="6" style="padding:10px; font-weight:900; color:white; font-size:1rem;">${mode === "2" ? '<i class="fas fa-layer-group"></i> ' : '<i class="fas fa-door-open"></i> '} ${groupName}</td></tr>`;
                         groupData.items.forEach(i => { 
                             const sellLabor = i.time * rateSell; 
                             const sellMat = i.rowT - sellLabor; 
                             totalLaborPDF += sellLabor; 
                             totalMatPDF += sellMat; 
                             
-                            rowsHtml += `<tr style="border-bottom:1px solid #333;"><td style="padding:10px; color:white;">${i.desc}</td><td style="padding:10px; text-align:center; color:#9CA3AF;">${i.qty}</td><td style="padding:10px; text-align:center; font-size:0.85rem; color:#9CA3AF;">${sellLabor > 0 ? App.formatMoney(sellLabor) : '-'}</td><td style="padding:10px; text-align:center; font-size:0.85rem; color:#9CA3AF;">${sellMat > 0 ? App.formatMoney(sellMat) : '-'}</td><td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(i.price)}</td><td style="padding:10px; text-align:right; font-weight:bold; color:white;">${App.formatMoney(i.rowT)}</td></tr>`; 
+                            rowsHtml += `<tr style="border-bottom:1px solid #333;"><td style="padding:10px; color:white; font-weight:700;">${i.desc}</td><td style="padding:10px; text-align:center; color:#9CA3AF;">${i.qty}</td><td style="padding:10px; text-align:center; font-size:0.9rem; color:#9CA3AF;">${sellLabor > 0 ? App.formatMoney(sellLabor) : '-'}</td><td style="padding:10px; text-align:center; font-size:0.9rem; color:#9CA3AF;">${sellMat > 0 ? App.formatMoney(sellMat) : '-'}</td><td style="padding:10px; text-align:right; color:#9CA3AF;">${App.formatMoney(i.price)}</td><td style="padding:10px; text-align:right; font-weight:bold; color:white;">${App.formatMoney(i.rowT)}</td></tr>`; 
                         });
                         
-                        rowsHtml += `<tr><td colspan="5" style="padding:10px; text-align:right; font-size:0.85rem; color:#9CA3AF;">Sous-total ${groupName}:</td><td style="padding:10px; text-align:right; font-weight:700; color:var(--accent);">${App.formatMoney(groupData.subtotal)}</td></tr><tr><td colspan="6" style="height:15px;"></td></tr>`;
+                        rowsHtml += `<tr><td colspan="5" style="padding:10px; text-align:right; font-size:0.9rem; color:#9CA3AF;">Sous-total ${groupName}:</td><td style="padding:10px; text-align:right; font-weight:900; color:var(--accent); font-size:1.1rem;">${App.formatMoney(groupData.subtotal)}</td></tr><tr><td colspan="6" style="height:15px;"></td></tr>`;
                     }
                 }
                 
@@ -2954,7 +3010,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                                         <td style="text-align:right; font-weight:700;">${App.formatMoney(totalMatPDF)}</td>
                                     </tr>
                                 </table>
-                                <div style="font-size:1.5rem; font-weight:900; color:#FFC033; border-top:2px solid #333; padding-top:10px; width:300px; text-align:right;">
+                                <div style="font-size:1.8rem; font-weight:900; color:#FFC033; border-top:2px solid #333; padding-top:10px; width:300px; text-align:right;">
                                     TOTAL A PAYER: ${App.formatMoney(totalTTC)}
                                 </div>
                                 ${extraInfo}
@@ -3017,8 +3073,8 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     div.innerHTML = `
                         <div class="custom-checkbox ${isChecked ? 'checked' : ''}"></div>
                         <div style="flex:1;">
-                            <div style="font-weight:700; font-size:0.9rem; color:white;">${i.desc}</div>
-                            <div style="font-size:0.75rem; color:#9CA3AF;">${i.piece || 'Général'} ${assignedBadge}</div>
+                            <div style="font-weight:900; font-size:1rem; color:white;">${i.desc}</div>
+                            <div style="font-size:0.85rem; color:#9CA3AF;">${i.piece || 'Général'} ${assignedBadge}</div>
                         </div>`;
                     container.appendChild(div);
                 });
@@ -3098,17 +3154,17 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 const table = document.getElementById('vc-table'); 
                 table.innerHTML = `
                     <tr style="background:var(--primary); color:white;">
-                        <th style="padding:10px; text-align:left;">Tâche</th>
-                        <th style="padding:10px; text-align:left;">Zone</th>
-                        <th style="padding:10px; text-align:left;">Assigné</th>
+                        <th style="padding:10px; text-align:left; font-size:1.1rem;">Tâche</th>
+                        <th style="padding:10px; text-align:left; font-size:1.1rem;">Zone</th>
+                        <th style="padding:10px; text-align:left; font-size:1.1rem;">Assigné</th>
                     </tr>`;
                 
                 (doc.items || []).forEach(i => { 
                     table.innerHTML += `
                         <tr style="border-bottom:1px solid #333;">
-                            <td style="padding:10px; color:white;">${i.desc}</td>
-                            <td style="padding:10px; color:#9CA3AF;">${i.piece || '-'}</td>
-                            <td style="padding:10px; font-weight:bold; color:var(--success);">${i.assignedTo || '-'}</td>
+                            <td style="padding:10px; font-size:1rem; color:white;">${i.desc}</td>
+                            <td style="padding:10px; font-size:1rem; color:#9CA3AF;">${i.piece || '-'}</td>
+                            <td style="padding:10px; font-size:1rem; font-weight:bold; color:var(--success);">${i.assignedTo || '-'}</td>
                         </tr>`; 
                 });
                 
@@ -3131,11 +3187,11 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                     }); 
                 });
                 
-                let html = `<div style="font-family:'Inter', sans-serif; padding:20px; background:#121212; color:#F3F4F6;"><h2 style="color:#FFC033;">Zones de Travail - ${c.name}</h2>`;
+                let html = `<div style="font-family:'Inter', sans-serif; padding:20px; background:#121212; color:#F3F4F6;"><h2 style="color:#FFC033; font-size:1.6rem;">Zones de Travail - ${c.name}</h2>`;
                 for (const [room, items] of Object.entries(grouped)) { 
-                    html += `<h3 style="background:#1C3666; color:white; padding:10px; border-radius:8px; margin-top:20px;">${room}</h3><ul>`; 
+                    html += `<h3 style="background:#1C3666; color:white; padding:10px; border-radius:8px; margin-top:20px; font-size:1.2rem;">${room}</h3><ul>`; 
                     items.forEach(i => { 
-                        html += `<li style="margin-bottom:8px; color:#9CA3AF;"><strong style="color:white;">${i.desc}</strong> (Qté: ${i.qty}) - <em style="color:var(--success);">${i.assignedTo || 'Non assigné'}</em></li>`; 
+                        html += `<li style="margin-bottom:8px; font-size:1rem; color:#9CA3AF;"><strong style="color:white; font-size:1.1rem;">${i.desc}</strong> (Qté: ${i.qty}) - <em style="color:var(--success);">${i.assignedTo || 'Non assigné'}</em></li>`; 
                     }); 
                     html += `</ul>`; 
                 } 
@@ -3161,13 +3217,13 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                 
                 let html = `
                     <div style="font-family:'Inter', sans-serif; padding:20px; background:#121212; color:#F3F4F6;">
-                        <h2 style="color:#FFC033;">Cahier des Charges</h2>
-                        <div style="margin-bottom:20px; color:#9CA3AF;">
+                        <h2 style="color:#FFC033; font-size:1.6rem;">Cahier des Charges</h2>
+                        <div style="margin-bottom:20px; color:#9CA3AF; font-size:1rem;">
                             Chantier: <strong style="color:white;">${c.name}</strong><br>
                             Réf: ${doc.ref}<br>
                             Date: ${new Date(doc.date).toLocaleDateString()}
                         </div>
-                        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                        <table style="width:100%; border-collapse:collapse; font-size:1rem;">
                             <thead style="background:#1C3666; color:white;">
                                 <tr>
                                     <th style="padding:10px; text-align:left;">Tâche</th>
@@ -3221,7 +3277,7 @@ Tutte le logiche di backend e le funzioni esistenti sono state preservate. Il co
                             <div class="card-title">${d.ref}</div>
                             <div class="card-sub">${d.client}</div>
                         </div>
-                        <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.4rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); ${d.type==='CDC' ? `App.generateCDCPDF('${d.obj.id}', ${d.cid})` : `App.generateGlobalPDF('${d.type.toLowerCase()}', ${d.obj.id}, ${d.cid})`}"></i>`; 
+                        <i class="fas fa-file-pdf" style="color:#DC2626; font-size:1.6rem; padding:10px; cursor:pointer;" onclick="event.stopPropagation(); ${d.type==='CDC' ? `App.generateCDCPDF('${d.obj.id}', ${d.cid})` : `App.generateGlobalPDF('${d.type.toLowerCase()}', ${d.obj.id}, ${d.cid})`}"></i>`; 
                     
                     div.onclick = () => { 
                         Store.data.activeChantierId=d.cid; 
